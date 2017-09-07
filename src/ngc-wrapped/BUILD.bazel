@@ -1,0 +1,26 @@
+load("@build_bazel_rules_nodejs//:defs.bzl", "nodejs_binary")
+load("@build_bazel_rules_typescript//:defs.bzl", "ts_library")
+
+licenses(["notice"])  # Apache 2.0
+
+ts_library(
+    name = "ngc_lib",
+    srcs = ["index.ts"],
+    deps = [
+        "@build_bazel_rules_typescript//internal/tsc_wrapped"
+    ],
+    tsconfig = ":tsconfig.json",
+)
+
+nodejs_binary(
+    name = "ngc-wrapped",
+    # Entry point assumes the user is outside this WORKSPACE,
+    # and references our rules with @angular//src/ngc-wrapped
+    entry_point = "angular/src/ngc-wrapped/index.js",
+    args = ["--node_options=--expose-gc"],
+    data = [
+        ":ngc_lib",
+        "@build_bazel_rules_typescript//internal:worker_protocol.proto"
+    ],
+    visibility = ["//visibility:public"],
+)
