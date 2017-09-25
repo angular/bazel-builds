@@ -6,7 +6,6 @@
 load(":rules_typescript.bzl",
     "tsc_wrapped_tsconfig",
     "COMMON_ATTRIBUTES",
-    "COMMON_OUTPUTS",
     "compile_ts",
     "DEPS_ASPECTS",
     "ts_providers_dict_to_struct",
@@ -190,5 +189,4 @@ ng_module = rule(
             default = Label("@//:node_modules")
         ),
     },
-    outputs = COMMON_OUTPUTS,
 )
