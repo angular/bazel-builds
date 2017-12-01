@@ -1,11 +1,11 @@
 {
   "name": "@angular/bazel",
-  "version": "5.0.4-cbd93fe",
+  "version": "5.0.4-445d833",
   "description": "Angular - bazel build rules",
   "author": "angular",
   "license": "MIT",
   "peerDependencies": {
-    "@angular/compiler-cli": "5.0.4-cbd93fe",
+    "@angular/compiler-cli": "5.0.4-445d833",
     "typescript": ">=2.4.2 <2.5"
   },
   "dependencies": {
