@@ -21,8 +21,6 @@ nodejs_binary(
         ":ngc_lib",
         "@build_bazel_rules_typescript//internal:worker_protocol.proto",
     ],
-    # Entry point assumes the user is outside this WORKSPACE,
-    # and references our rules with @angular//src/ngc-wrapped
     entry_point = "angular/src/ngc-wrapped/index.js",
     node_modules = "@build_bazel_rules_typescript_deps//:node_modules",
     visibility = ["//visibility:public"],
@@ -33,8 +31,6 @@ nodejs_binary(
     data = [
         ":ngc_lib",
     ],
-    # Entry point assumes the user is outside this WORKSPACE,
-    # and references our rules with @angular//src/ngc-wrapped
     entry_point = "angular/src/ngc-wrapped/index.js/extract_i18n.js",
     visibility = ["//visibility:public"],
 )
