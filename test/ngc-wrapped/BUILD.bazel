@@ -11,6 +11,7 @@ ts_library(
     tsconfig = ":tsconfig.json",
     deps = [
         "//src/ngc-wrapped:ngc_lib",
+        "//packages/compiler-cli",
     ],
 )
 
