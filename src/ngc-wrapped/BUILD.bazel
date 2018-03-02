@@ -11,7 +11,7 @@ ts_library(
     tsconfig = ":tsconfig.json",
     visibility = ["//test/ngc-wrapped:__subpackages__"],
     deps = [
-        "@build_bazel_rules_typescript//internal/tsc_wrapped",
+        "@build_bazel_rules_typescript//internal:tsc_wrapped",
     ],
 )
 
