@@ -45,7 +45,13 @@ export function runOneBuild(args: string[], inputs?: {[path: string]: string}): 
   if (args[0] === '-p') args.shift();
   // Strip leading at-signs, used to indicate a params file
   const project = args[0].replace(/^@+/, '');
-  const [{options: tsOptions, bazelOpts, files, config}] = parseTsconfig(project);
+
+  const [parsedOptions, errors] = parseTsconfig(project);
+  if (errors && errors.length) {
+    console.error(ng.formatDiagnostics(errors));
+    return false;
+  }
+  const {options: tsOptions, bazelOpts, files, config} = parsedOptions;
   const expectedOuts = config['angularCompilerOptions']['expectedOut'];
 
   const {basePath} = ng.calcProjectFileAndBasePath(project);
@@ -88,6 +94,13 @@ export function compile({allowNonHermeticReads, allDepsCompiledWithBazel = true,
   expectedOuts: string[], gatherDiagnostics?: (program: ng.Program) => ng.Diagnostics
 }): {diagnostics: ng.Diagnostics, program: ng.Program} {
   let fileLoader: FileLoader;
+
+  if (bazelOpts.maxCacheSizeMb !== undefined) {
+    const maxCacheSizeBytes = bazelOpts.maxCacheSizeMb * (1 << 20);
+    fileCache.setMaxCacheSize(maxCacheSizeBytes);
+  } else {
+    fileCache.resetMaxCacheSize();
+  }
 
   if (inputs) {
     fileLoader = new CachedFileLoader(fileCache, allowNonHermeticReads);
@@ -183,16 +196,25 @@ export function compile({allowNonHermeticReads, allDepsCompiledWithBazel = true,
     }
     return bazelOpts.workspaceName + '/' + result;
   };
-  ngHost.toSummaryFileName = (fileName: string, referringSrcFileName: string) =>
-      relativeToRootDirs(fileName, compilerOpts.rootDirs).replace(EXT, '');
+  ngHost.toSummaryFileName = (fileName: string, referringSrcFileName: string) => path.join(
+      bazelOpts.workspaceName,
+      relativeToRootDirs(fileName, compilerOpts.rootDirs).replace(EXT, ''));
   if (allDepsCompiledWithBazel) {
     // Note: The default implementation would work as well,
     // but we can be faster as we know how `toSummaryFileName` works.
     // Note: We can't do this if some deps have been compiled with the command line,
     // as that has a different implementation of fromSummaryFileName / toSummaryFileName
-    ngHost.fromSummaryFileName = (fileName: string, referringLibFileName: string) =>
-        path.resolve(bazelBin, fileName) + '.d.ts';
+    ngHost.fromSummaryFileName = (fileName: string, referringLibFileName: string) => {
+      const workspaceRelative = fileName.split('/').splice(1).join('/');
+      return path.resolve(bazelBin, workspaceRelative) + '.d.ts';
+    };
   }
+  // Patch a property on the ngHost that allows the resourceNameToModuleName function to
+  // report better errors.
+  (ngHost as any).reportMissingResource = (resourceName: string) => {
+    console.error(`\nAsset not found:\n  ${resourceName}`);
+    console.error('Check that it\'s included in the `assets` attribute of the `ng_module` rule.\n');
+  };
 
   const emitCallback: ng.TsEmitCallback = ({
     program,

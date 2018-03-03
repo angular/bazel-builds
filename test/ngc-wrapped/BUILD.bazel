@@ -11,6 +11,7 @@ ts_library(
     tsconfig = ":tsconfig.json",
     deps = [
         "//src/ngc-wrapped:ngc_lib",
+        "//packages/compiler-cli",
     ],
 )
 
@@ -18,7 +19,7 @@ ts_library(
 # .d.ts files (by default, jasmine_node_test would get the .js files).
 filegroup(
     name = "angular_core",
-    srcs = ["@//packages/core"],
+    srcs = ["//packages/core"],
 )
 
 jasmine_node_test(

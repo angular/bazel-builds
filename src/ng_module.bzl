@@ -12,7 +12,16 @@ load(":rules_typescript.bzl",
     "compile_ts",
     "DEPS_ASPECTS",
     "ts_providers_dict_to_struct",
+    "json_marshal",
 )
+
+def _basename_of(ctx, file):
+  ext_len = len(".ts")
+  if file.short_path.endswith(".ng.html"):
+    ext_len = len(".ng.html")
+  elif file.short_path.endswith(".html"):
+    ext_len = len(".html")
+  return file.short_path[len(ctx.label.package) + 1:-ext_len]
 
 # Calculate the expected output of the template compiler for every source in
 # in the library. Most of these will be produced as empty files but it is
@@ -23,18 +32,25 @@ def _expected_outs(ctx):
   declaration_files = []
   summary_files = []
 
-  for src in ctx.files.srcs + ctx.files.assets:
-    if src.short_path.endswith(".ts") and not src.short_path.endswith(".d.ts"):
-      basename = src.short_path[len(ctx.label.package) + 1:-len(".ts")]
-      devmode_js = [
-          ".ngfactory.js",
-          ".ngsummary.js",
-          ".js",
-      ]
-      summaries = [".ngsummary.json"]
+  factory_basename_set = depset([_basename_of(ctx, src) for src in ctx.files.factories])
 
+  for src in ctx.files.srcs + ctx.files.assets:
+    package_prefix = ctx.label.package + "/" if ctx.label.package else ""
+
+    if src.short_path.endswith(".ts") and not src.short_path.endswith(".d.ts"):
+      basename = src.short_path[len(package_prefix):-len(".ts")]
+      if len(factory_basename_set) == 0 or basename in factory_basename_set:
+        devmode_js = [
+            ".ngfactory.js",
+            ".ngsummary.js",
+            ".js",
+        ]
+        summaries = [".ngsummary.json"]
+      else:
+        devmode_js = [".js"]
+        summaries = []
     elif src.short_path.endswith(".css"):
-      basename = src.short_path[len(ctx.label.package) + 1:-len(".css")]
+      basename = src.short_path[len(package_prefix):-len(".css")]
       devmode_js = [
           ".css.shim.ngstyle.js",
           ".css.ngstyle.js",
@@ -44,7 +60,8 @@ def _expected_outs(ctx):
     else:
       continue
 
-    closure_js = [f.replace(".js", ".closure.js") for f in devmode_js]
+    filter_summaries = ctx.attr.filter_summaries
+    closure_js = [f.replace(".js", ".closure.js") for f in devmode_js if not filter_summaries or not f.endswith(".ngsummary.js")]
     declarations = [f.replace(".js", ".d.ts") for f in devmode_js]
 
     devmode_js_files += [ctx.new_file(ctx.bin_dir, basename + ext) for ext in devmode_js]
@@ -76,8 +93,7 @@ def _ngc_tsconfig(ctx, files, srcs, **kwargs):
           "enableSummariesForJit": True,
           "fullTemplateTypeCheck": ctx.attr.type_check,
           # FIXME: wrong place to de-dupe
-          "expectedOut": depset([o.path for o in expected_outs]).to_list(),
-          "preserveWhitespaces": False,
+          "expectedOut": depset([o.path for o in expected_outs]).to_list()
       }
   })
 
@@ -106,8 +122,8 @@ _EXTRA_NODE_OPTIONS_FLAGS = [
     "--node_options=--expose-gc"
 ]
 
-def ngc_compile_action(ctx, label, inputs, outputs, messages_out, config_file_path,
-                        locale=None, i18n_args=[]):
+def ngc_compile_action(ctx, label, inputs, outputs, messages_out, tsconfig_file,
+                       node_opts, locale=None, i18n_args=[]):
   """Helper function to create the ngc action.
 
   This is exposed for google3 to wire up i18n replay rules, and is not intended
@@ -119,7 +135,8 @@ def ngc_compile_action(ctx, label, inputs, outputs, messages_out, config_file_pa
     inputs: passed to the ngc action's inputs
     outputs: passed to the ngc action's outputs
     messages_out: produced xmb files
-    config_file_path: path to the tsconfig file
+    tsconfig_file: tsconfig file with settings used for the compilation
+    node_opts: list of strings, extra nodejs options.
     locale: i18n locale, or None
     i18n_args: additional command-line arguments to ngc
 
@@ -138,14 +155,15 @@ def ngc_compile_action(ctx, label, inputs, outputs, messages_out, config_file_pa
   else:
     supports_workers = str(int(ctx.attr._supports_workers))
 
-  arguments = list(_EXTRA_NODE_OPTIONS_FLAGS)
+  arguments = (list(_EXTRA_NODE_OPTIONS_FLAGS) +
+               ["--node_options=%s" % opt for opt in node_opts])
   # One at-sign makes this a params-file, enabling the worker strategy.
   # Two at-signs escapes the argument so it's passed through to ngc
   # rather than the contents getting expanded.
   if supports_workers == "1":
-    arguments += ["@@" + config_file_path]
+    arguments += ["@@" + tsconfig_file.path]
   else:
-    arguments += ["-p", config_file_path]
+    arguments += ["-p", tsconfig_file.path]
 
   arguments += i18n_args
 
@@ -166,7 +184,7 @@ def ngc_compile_action(ctx, label, inputs, outputs, messages_out, config_file_pa
                outputs = messages_out,
                executable = ctx.executable._ng_xi18n,
                arguments = (_EXTRA_NODE_OPTIONS_FLAGS +
-                            [config_file_path] +
+                            [tsconfig_file.path] +
                             # The base path is bin_dir because of the way the ngc
                             # compiler host is configured. So we need to explictily
                             # point to genfiles/ to redirect the output.
@@ -177,14 +195,15 @@ def ngc_compile_action(ctx, label, inputs, outputs, messages_out, config_file_pa
   if not locale and not ctx.attr.no_i18n:
     return struct(
         label = label,
-        tsconfig = config_file_path,
+        tsconfig = tsconfig_file,
         inputs = inputs,
         outputs = outputs,
+        compiler = ctx.executable.compiler,
     )
 
   return None
 
-def _compile_action(ctx, inputs, outputs, messages_out, config_file_path):
+def _compile_action(ctx, inputs, outputs, messages_out, tsconfig_file, node_opts):
   # Give the Angular compiler all the user-listed assets
   file_inputs = list(ctx.files.assets)
 
@@ -203,22 +222,64 @@ def _compile_action(ctx, inputs, outputs, messages_out, config_file_path):
       transitive = [inputs] + [dep.collect_summaries_aspect_result for dep in ctx.attr.deps
                     if hasattr(dep, "collect_summaries_aspect_result")])
 
-  return ngc_compile_action(ctx, ctx.label, action_inputs, outputs, messages_out, config_file_path)
+  return ngc_compile_action(ctx, ctx.label, action_inputs, outputs, messages_out, tsconfig_file, node_opts)
 
 
-def _prodmode_compile_action(ctx, inputs, outputs, config_file_path):
+def _prodmode_compile_action(ctx, inputs, outputs, tsconfig_file, node_opts):
   outs = _expected_outs(ctx)
-  return _compile_action(ctx, inputs, outputs + outs.closure_js, outs.i18n_messages, config_file_path)
+  return _compile_action(ctx, inputs, outputs + outs.closure_js, outs.i18n_messages, tsconfig_file, node_opts)
 
-def _devmode_compile_action(ctx, inputs, outputs, config_file_path):
+def _devmode_compile_action(ctx, inputs, outputs, tsconfig_file, node_opts):
   outs = _expected_outs(ctx)
-  _compile_action(ctx, inputs, outputs + outs.devmode_js + outs.declarations + outs.summaries, None, config_file_path)
+  compile_action_outputs = outputs + outs.devmode_js + outs.declarations + outs.summaries
+  _compile_action(ctx, inputs, compile_action_outputs, None, tsconfig_file, node_opts)
 
 def _ts_expected_outs(ctx, label):
   # rules_typescript expects a function with two arguments, but our
   # implementation doesn't use the label
   _ignored = [label]
   return _expected_outs(ctx)
+
+def _write_bundle_index(ctx):
+  basename = "_%s.bundle_index" % ctx.label.name
+  tsconfig_file = ctx.actions.declare_file("%s.tsconfig.json" % basename)
+  metadata_file = ctx.actions.declare_file("%s.metadata.json" % basename)
+  tstyping_file = ctx.actions.declare_file("%s.d.ts" % basename)
+
+  tsconfig = dict(tsc_wrapped_tsconfig(ctx, ctx.files.srcs, ctx.files.srcs), **{
+    "angularCompilerOptions": {
+      "flatModuleOutFile": basename,
+    },
+  })
+  if ctx.attr.module_name:
+    tsconfig["angularCompilerOptions"]["flatModuleId"] = ctx.attr.module_name
+
+  entry_point = ctx.attr.entry_point if ctx.attr.entry_point else "index.ts"
+  # createBundleIndexHost in bundle_index_host.ts will throw if the "files" has more than one entry.
+  # We don't want to fail() here, however, because not all ng_module's will have the bundle index written.
+  # So we make the assumption that the index.ts file in the highest parent directory is the entry point.
+  index_file = None
+
+  for f in tsconfig["files"]:
+    if f.endswith("/" + entry_point):
+      if not index_file or len(f) < len(index_file):
+        index_file = f
+
+  if index_file:
+    tsconfig["files"] = [index_file]
+
+  ctx.actions.write(tsconfig_file, json_marshal(tsconfig))
+
+  outputs = [metadata_file, tstyping_file]
+
+  ctx.action(
+      progress_message = "Producing metadata for bundle %s" % ctx.label.name,
+      executable = ctx.executable._index_bundler,
+      inputs = ctx.files.srcs + [tsconfig_file],
+      outputs = outputs,
+      arguments = ["-p", tsconfig_file.path],
+  )
+  return outputs
 
 def ng_module_impl(ctx, ts_compile_actions):
   """Implementation function for the ng_module rule.
@@ -247,6 +308,16 @@ def ng_module_impl(ctx, ts_compile_actions):
   }
   providers["ngc_messages"] = outs.i18n_messages
 
+  # Only produces the flattened "index bundle" metadata when requested by some other rule
+  # and only under Bazel
+  if hasattr(ctx.executable, "_index_bundler"):
+    bundle_index_metadata = _write_bundle_index(ctx)
+    providers["angular"]["flat_module_metadata"] = depset(bundle_index_metadata,
+        transitive = [
+            d.angular.flat_module_metadata
+            for d in ctx.attr.deps
+            if hasattr(d, "angular")])
+
   return providers
 
 def _ng_module_impl(ctx):
@@ -262,6 +333,12 @@ NG_MODULE_ATTRIBUTES = {
       # TODO(alexeagle): change this to ".ng.html" when usages updated
       ".html",
     ]),
+
+    "factories": attr.label_list(
+        allow_files = [".ts", ".html"],
+        mandatory = False),
+
+    "filter_summaries": attr.bool(default = False),
 
     "type_check": attr.bool(default = True),
 
@@ -293,6 +370,13 @@ ng_module = rule(
         "node_modules": attr.label(
             default = Label("@//:node_modules")
         ),
+
+        "entry_point": attr.string(),
+
+        "_index_bundler": attr.label(
+            executable = True,
+            cfg = "host",
+            default = Label("//src:index_bundler")),
     }),
     outputs = COMMON_OUTPUTS,
 )
