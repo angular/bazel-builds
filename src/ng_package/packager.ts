@@ -32,7 +32,7 @@ function main(args: string[]): number {
   function replaceVersionPlaceholders(filePath: string, content: string) {
     if (stampData) {
       const version = shx.grep('BUILD_SCM_VERSION', stampData).split(' ')[1].trim();
-      return content.replace(/6.0.0-beta.6-2c75acc/g, version);
+      return content.replace(/6.0.0-beta.6-fa974c7/g, version);
     }
     return content;
   }
