@@ -1,1 +1,23 @@
-# Empty marker file, indicating this directory is a Bazel package.
+load("//tools:defaults.bzl", "npm_package")
+
+genrule(
+    name = "workspace",
+    outs = ["WORKSPACE"],
+    cmd = "echo 'workspace(name=\"angular\")' > $@",
+)
+
+npm_package(
+    name = "npm_package",
+    srcs = [
+        "BUILD.bazel",
+        "index.bzl",
+        "package.json",
+        "//src:package_assets",
+    ],
+    # Re-host // which is just // in the public distro
+    replacements = {
+        "//": "//",
+        "angular/": "angular/",
+    },
+    deps = [":workspace"],
+)
