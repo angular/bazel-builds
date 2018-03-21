@@ -37,8 +37,12 @@ def _expected_outs(ctx):
   for src in ctx.files.srcs + ctx.files.assets:
     package_prefix = ctx.label.package + "/" if ctx.label.package else ""
 
-    if src.short_path.endswith(".ts") and not src.short_path.endswith(".d.ts"):
-      basename = src.short_path[len(package_prefix):-len(".ts")]
+    # Strip external repository name from path if src is from external repository
+    # If src is from external repository, it's short_path will be ../<external_repo_name>/...
+    short_path = src.short_path if src.short_path[0:2] != ".." else "/".join(src.short_path.split("/")[2:])
+
+    if short_path.endswith(".ts") and not short_path.endswith(".d.ts"):
+      basename = short_path[len(package_prefix):-len(".ts")]
       if len(factory_basename_set) == 0 or basename in factory_basename_set:
         devmode_js = [
             ".ngfactory.js",
@@ -49,8 +53,8 @@ def _expected_outs(ctx):
       else:
         devmode_js = [".js"]
         summaries = []
-    elif src.short_path.endswith(".css"):
-      basename = src.short_path[len(package_prefix):-len(".css")]
+    elif short_path.endswith(".css"):
+      basename = short_path[len(package_prefix):-len(".css")]
       devmode_js = [
           ".css.shim.ngstyle.js",
           ".css.ngstyle.js",
@@ -79,7 +83,13 @@ def _expected_outs(ctx):
     i18n_messages = i18n_messages_files,
   )
 
+def _ivy_tsconfig(ctx, files, srcs, **kwargs):
+  return _ngc_tsconfig_helper(ctx, files, srcs, True, **kwargs)
+
 def _ngc_tsconfig(ctx, files, srcs, **kwargs):
+  return _ngc_tsconfig_helper(ctx, files, srcs, False, **kwargs)
+
+def _ngc_tsconfig_helper(ctx, files, srcs, enable_ivy, **kwargs):
   outs = _expected_outs(ctx)
   if "devmode_manifest" in kwargs:
     expected_outs = outs.devmode_js + outs.declarations + outs.summaries
@@ -92,6 +102,7 @@ def _ngc_tsconfig(ctx, files, srcs, **kwargs):
           "generateCodeForLibraries": False,
           "allowEmptyCodegenFiles": True,
           "enableSummariesForJit": True,
+          "enableIvy": enable_ivy,
           "fullTemplateTypeCheck": ctx.attr.type_check,
           # FIXME: wrong place to de-dupe
           "expectedOut": depset([o.path for o in expected_outs]).to_list()
@@ -242,47 +253,55 @@ def _ts_expected_outs(ctx, label):
   return _expected_outs(ctx)
 
 def _write_bundle_index(ctx):
-  basename = "_%s.bundle_index" % ctx.label.name
-  tsconfig_file = ctx.actions.declare_file("%s.tsconfig.json" % basename)
-  metadata_file = ctx.actions.declare_file("%s.metadata.json" % basename)
-  tstyping_file = ctx.actions.declare_file("%s.d.ts" % basename)
+  # Provide a default for the flat_module_out_file attribute.
+  # We cannot use the default="" parameter of ctx.attr because the value is calculated
+  # from other attributes (name)
+  flat_module_out_file = ctx.attr.flat_module_out_file if ctx.attr.flat_module_out_file else "%s_public_index" % ctx.label.name
+
+  tsconfig_file = ctx.actions.declare_file("%s.tsconfig.json" % flat_module_out_file)
+  metadata_file = ctx.actions.declare_file("%s.metadata.json" % flat_module_out_file)
+  typings_file = ctx.actions.declare_file("%s.d.ts" % flat_module_out_file)
+  index_file = ctx.actions.declare_file("%s.js" % flat_module_out_file)
 
   tsconfig = dict(tsc_wrapped_tsconfig(ctx, ctx.files.srcs, ctx.files.srcs), **{
     "angularCompilerOptions": {
-      "flatModuleOutFile": basename,
+      "flatModuleOutFile": flat_module_out_file,
     },
   })
-  if ctx.attr.module_name:
-    tsconfig["angularCompilerOptions"]["flatModuleId"] = ctx.attr.module_name
+  if not ctx.attr.module_name:
+    fail("Only ng_module with a module_name attribute should be exposed as flat module")
+  tsconfig["angularCompilerOptions"]["flatModuleId"] = ctx.attr.module_name
 
   entry_point = ctx.attr.entry_point if ctx.attr.entry_point else "index.ts"
   # createBundleIndexHost in bundle_index_host.ts will throw if the "files" has more than one entry.
   # We don't want to fail() here, however, because not all ng_module's will have the bundle index written.
   # So we make the assumption that the index.ts file in the highest parent directory is the entry point.
-  index_file = None
+  index = None
 
   for f in tsconfig["files"]:
     if f.endswith("/" + entry_point):
-      if not index_file or len(f) < len(index_file):
-        index_file = f
+      if not index or len(f) < len(index):
+        index = f
 
-  if index_file:
-    tsconfig["files"] = [index_file]
+  if index:
+    tsconfig["files"] = [index]
 
   ctx.actions.write(tsconfig_file, json_marshal(tsconfig))
-
-  outputs = [metadata_file, tstyping_file]
 
   ctx.action(
       progress_message = "Producing metadata for bundle %s" % ctx.label.name,
       executable = ctx.executable._index_bundler,
       inputs = ctx.files.srcs + [tsconfig_file],
-      outputs = outputs,
+      outputs = [metadata_file, typings_file, index_file],
       arguments = ["-p", tsconfig_file.path],
   )
-  return outputs
+  return struct(
+      module_name = ctx.attr.module_name,
+      metadata_file = metadata_file,
+      typings_file = typings_file,
+      index_file = index_file)
 
-def ng_module_impl(ctx, ts_compile_actions):
+def ng_module_impl(ctx, ts_compile_actions, ivy = False):
   """Implementation function for the ng_module rule.
 
   This is exposed so that google3 can have its own entry point that re-uses this
@@ -291,16 +310,19 @@ def ng_module_impl(ctx, ts_compile_actions):
   Args:
     ctx: the skylark rule context
     ts_compile_actions: generates all the actions to run an ngc compilation
+    ivy: if True, run the compiler in Ivy mode (internal only)
 
   Returns:
     the result of the ng_module rule as a dict, suitable for
     conversion by ts_providers_dict_to_struct
   """
 
+  tsconfig = _ngc_tsconfig if not ivy else _ivy_tsconfig
+
   providers = ts_compile_actions(
       ctx, is_library=True, compile_action=_prodmode_compile_action,
       devmode_compile_action=_devmode_compile_action,
-      tsc_wrapped_tsconfig=_ngc_tsconfig,
+      tsc_wrapped_tsconfig=tsconfig,
       outputs = _ts_expected_outs)
 
   outs = _expected_outs(ctx)
@@ -311,18 +333,20 @@ def ng_module_impl(ctx, ts_compile_actions):
 
   # Only produces the flattened "index bundle" metadata when requested by some other rule
   # and only under Bazel
-  if hasattr(ctx.executable, "_index_bundler"):
-    bundle_index_metadata = _write_bundle_index(ctx)
-    providers["angular"]["flat_module_metadata"] = depset(bundle_index_metadata,
-        transitive = [
-            d.angular.flat_module_metadata
-            for d in ctx.attr.deps
-            if hasattr(d, "angular")])
+  if hasattr(ctx.executable, "_index_bundler") and ctx.attr.module_name:
+    bundle_index_metadata = [_write_bundle_index(ctx)]
+  else:
+    bundle_index_metadata = []
+
+  providers["angular"]["flat_module_metadata"] = depset(bundle_index_metadata)
 
   return providers
 
 def _ng_module_impl(ctx):
   return ts_providers_dict_to_struct(ng_module_impl(ctx, compile_ts))
+
+def _ivy_module_impl(ctx):
+  return ts_providers_dict_to_struct(ng_module_impl(ctx, compile_ts, True))
 
 NG_MODULE_ATTRIBUTES = {
     "srcs": attr.label_list(allow_files = [".ts"]),
@@ -362,24 +386,44 @@ NG_MODULE_ATTRIBUTES = {
     "_supports_workers": attr.bool(default = True),
 }
 
+NG_MODULE_RULE_ATTRS = dict(dict(COMMON_ATTRIBUTES, **NG_MODULE_ATTRIBUTES), **{
+    "tsconfig": attr.label(allow_files = True, single_file = True),
+
+    # @// is special syntax for the "main" repository
+    # The default assumes the user specified a target "node_modules" in their
+    # root BUILD file.
+    "node_modules": attr.label(
+        default = Label("@//:node_modules")
+    ),
+
+    "entry_point": attr.string(),
+
+    # Default is %{name}_public_index
+    # The suffix points to the generated "bundle index" files that users import from
+    # The default is intended to avoid collisions with the users input files.
+    # Later packaging rules will point to these generated files as the entry point
+    # into the package.
+    # See the flatModuleOutFile documentation in
+    # https://github.com/angular/angular/blob/master/packages/compiler-cli/src/transformers/api.ts
+    "flat_module_out_file": attr.string(),
+
+    "_index_bundler": attr.label(
+        executable = True,
+        cfg = "host",
+        default = Label("//src:index_bundler")),
+})
+
 ng_module = rule(
     implementation = _ng_module_impl,
-    attrs = dict(dict(COMMON_ATTRIBUTES, **NG_MODULE_ATTRIBUTES), **{
-        "tsconfig": attr.label(allow_files = True, single_file = True),
+    attrs = NG_MODULE_RULE_ATTRS,
+    outputs = COMMON_OUTPUTS,
+)
 
-        # @// is special syntax for the "main" repository
-        # The default assumes the user specified a target "node_modules" in their
-        # root BUILD file.
-        "node_modules": attr.label(
-            default = Label("@//:node_modules")
-        ),
-
-        "entry_point": attr.string(),
-
-        "_index_bundler": attr.label(
-            executable = True,
-            cfg = "host",
-            default = Label("//src:index_bundler")),
-    }),
+# TODO(alxhub): this rule exists to allow early testing of the Ivy compiler within angular/angular,
+# and should not be made public. When ng_module() supports Ivy-mode outputs, this rule should be
+# removed and its usages refactored to use ng_module() directly.
+internal_ivy_ng_module = rule(
+    implementation = _ivy_module_impl,
+    attrs = NG_MODULE_RULE_ATTRS,
     outputs = COMMON_OUTPUTS,
 )
