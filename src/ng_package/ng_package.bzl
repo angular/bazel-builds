@@ -239,7 +239,11 @@ def _ng_package_impl(ctx):
     for d in ctx.attr.deps:
       devfiles = depset(transitive = [devfiles, d.files, d.node_sources])
 
-  package_dir = create_package(ctx, devfiles.to_list(), [npm_package_directory])
+  # Re-use the create_package function from the nodejs npm_package rule.
+  package_dir = create_package(
+      ctx,
+      devfiles.to_list(),
+      [npm_package_directory] + ctx.files.packages)
   return struct(
     files = depset([package_dir])
   )
@@ -258,6 +262,9 @@ NG_PACKAGE_ATTRS = dict(NPM_PACKAGE_ATTRS, **dict(ROLLUP_ATTRS, **{
     "include_devmode_srcs": attr.bool(default = False),
     "readme_md": attr.label(allow_single_file = FileType([".md"])),
     "globals": attr.string_dict(default={}),
+    "entry_point_name": attr.string(
+      doc = "Name to use when generating bundle files for the primary entry-point.",
+    ),
     "_ng_packager": attr.label(
         default=Label("//src/ng_package:packager"),
         executable=True, cfg="host"),
@@ -278,11 +285,20 @@ NG_PACKAGE_ATTRS = dict(NPM_PACKAGE_ATTRS, **dict(ROLLUP_ATTRS, **{
 # Currently we just borrow the entry point for this, if it looks like
 # some/path/to/my/package/index.js
 # we assume the files should be named "package.*.js"
-def primary_entry_point_name(name, entry_point):
-  return entry_point.split("/")[-2] if entry_point.find("/") >=0 else name
+def primary_entry_point_name(name, entry_point, entry_point_name):
+  if entry_point_name:
+      # If an explicit entry_point_name is given, use that.
+      return entry_point_name
+  elif entry_point.find("/") >= 0:
+      # If the entry_point has multiple path segments, use the second one.
+      # E.g., for "@angular/cdk/a11y", use "cdk".
+      return entry_point.split("/")[-2]
+  else:
+      # Fall back to the name of the ng_package rule.
+      return name
 
-def ng_package_outputs(name, entry_point):
-  basename = primary_entry_point_name(name, entry_point)
+def ng_package_outputs(name, entry_point, entry_point_name):
+  basename = primary_entry_point_name(name, entry_point, entry_point_name)
   outputs = {
       "fesm5": "fesm5/%s.js" % basename,
       "fesm2015": "fesm2015/%s.js" % basename,
