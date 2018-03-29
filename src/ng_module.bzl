@@ -7,6 +7,7 @@
 
 load(":rules_typescript.bzl",
     "tsc_wrapped_tsconfig",
+    "TsConfigInfo",
     "COMMON_ATTRIBUTES",
     "COMMON_OUTPUTS",
     "compile_ts",
@@ -228,6 +229,8 @@ def _compile_action(ctx, inputs, outputs, messages_out, tsconfig_file, node_opts
   # If the user supplies a tsconfig.json file, the Angular compiler needs to read it
   if hasattr(ctx.attr, "tsconfig") and ctx.file.tsconfig:
     file_inputs.append(ctx.file.tsconfig)
+    if TsConfigInfo in ctx.attr.tsconfig:
+      file_inputs.extend(ctx.attr.tsconfig[TsConfigInfo].deps)
 
   # Collect the inputs and summary files from our deps
   action_inputs = depset(file_inputs,
