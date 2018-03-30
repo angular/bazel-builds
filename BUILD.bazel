@@ -19,5 +19,6 @@ npm_package(
         "//": "//",
         "angular/": "angular/",
     },
+    tags = ["release-with-framework"],
     deps = [":workspace"],
 )
