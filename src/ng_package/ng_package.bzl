@@ -109,7 +109,7 @@ def _rollup(ctx, rollup_config, entry_point, inputs, js_output, format = "es", p
   if ctx.version_file:
     other_inputs.append(ctx.version_file)
   ctx.actions.run(
-      progress_message = "Angular Packaging: rolling up %s" % ctx.label.name,
+      progress_message = "ng_package: Rollup %s" % ctx.label,
       mnemonic = "AngularPackageRollup",
       inputs = inputs.to_list() + other_inputs,
       outputs = [js_output, map_output],
@@ -298,9 +298,9 @@ def _ng_package_impl(ctx):
       ctx,
       devfiles.to_list(),
       [npm_package_directory] + ctx.files.packages)
-  return struct(
+  return [DefaultInfo(
     files = depset([package_dir])
-  )
+  )]
 
 NG_PACKAGE_ATTRS = dict(NPM_PACKAGE_ATTRS, **dict(ROLLUP_ATTRS, **{
     "srcs": attr.label_list(allow_files = True),
