@@ -1,6 +1,6 @@
 {
   "name": "@angular/bazel",
-  "version": "6.0.0-rc.5+244.sha-3fd3c2a",
+  "version": "6.0.0-rc.5+245.sha-41cd8f3",
   "description": "Angular - bazel build rules",
   "author": "angular",
   "license": "MIT",
@@ -12,7 +12,7 @@
     "protobufjs": "5.0.0"
   },
   "peerDependencies": {
-    "@angular/compiler-cli": "6.0.0-rc.5+244.sha-3fd3c2a",
+    "@angular/compiler-cli": "6.0.0-rc.5+245.sha-41cd8f3",
     "typescript": ">=2.7.2 <2.9"
   },
   "repository": {
