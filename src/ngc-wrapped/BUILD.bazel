@@ -1,6 +1,12 @@
 load("@build_bazel_rules_nodejs//:defs.bzl", "nodejs_binary")
 load("@build_bazel_rules_typescript//:defs.bzl", "ts_library")
 
+filegroup(
+    name = "package_assets",
+    srcs = glob(["*"]),
+    visibility = ["//packages/bazel:__subpackages__"],
+)
+
 ts_library(
     name = "ngc_lib",
     srcs = [
@@ -11,7 +17,8 @@ ts_library(
     tsconfig = ":tsconfig.json",
     visibility = ["//test/ngc-wrapped:__subpackages__"],
     deps = [
-        "@build_bazel_rules_typescript//internal/tsc_wrapped",
+        
+        "@build_bazel_rules_typescript//internal:tsc_wrapped",
     ],
 )
 
@@ -21,10 +28,8 @@ nodejs_binary(
         ":ngc_lib",
         "@build_bazel_rules_typescript//internal:worker_protocol.proto",
     ],
-    # Entry point assumes the user is outside this WORKSPACE,
-    # and references our rules with @angular//src/ngc-wrapped
     entry_point = "angular/src/ngc-wrapped/index.js",
-    node_modules = "@build_bazel_rules_typescript_deps//:node_modules",
+    node_modules = "@build_bazel_rules_typescript_tsc_wrapped_deps//:node_modules",
     visibility = ["//visibility:public"],
 )
 
@@ -33,8 +38,6 @@ nodejs_binary(
     data = [
         ":ngc_lib",
     ],
-    # Entry point assumes the user is outside this WORKSPACE,
-    # and references our rules with @angular//src/ngc-wrapped
     entry_point = "angular/src/ngc-wrapped/index.js/extract_i18n.js",
     visibility = ["//visibility:public"],
 )
