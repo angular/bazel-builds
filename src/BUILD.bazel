@@ -5,6 +5,7 @@ filegroup(
     srcs = glob(["*"]) + [
         "//src/ng_package:package_assets",
         "//src/ngc-wrapped:package_assets",
+        "//src/protractor:package_assets",
     ],
     visibility = ["//packages/bazel:__subpackages__"],
 )
