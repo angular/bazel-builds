@@ -4,6 +4,9 @@
 load("@build_bazel_rules_typescript//internal:build_defs.bzl",
     _tsc_wrapped_tsconfig = "tsc_wrapped_tsconfig",
 )
+load("@build_bazel_rules_typescript//internal:ts_config.bzl",
+    _TsConfigInfo = "TsConfigInfo",
+)
 
 load("@build_bazel_rules_typescript//internal:common/compilation.bzl",
     _COMMON_ATTRIBUTES = "COMMON_ATTRIBUTES",
@@ -24,3 +27,4 @@ compile_ts = _compile_ts
 DEPS_ASPECTS = _DEPS_ASPECTS
 ts_providers_dict_to_struct = _ts_providers_dict_to_struct
 json_marshal = _json_marshal
+TsConfigInfo = _TsConfigInfo
