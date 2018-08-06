@@ -76,7 +76,8 @@ export function runOneBuild(args: string[], inputs?: {[path: string]: string}): 
 export function relativeToRootDirs(filePath: string, rootDirs: string[]): string {
   if (!filePath) return filePath;
   // NB: the rootDirs should have been sorted longest-first
-  for (const dir of rootDirs || []) {
+  for (let i = 0; i < rootDirs.length; i++) {
+    const dir = rootDirs[i];
     const rel = path.posix.relative(dir, filePath);
     if (rel.indexOf('.') != 0) return rel;
   }
@@ -106,7 +107,9 @@ export function compile({allowNonHermeticReads, allDepsCompiledWithBazel = true,
     fileLoader = new CachedFileLoader(fileCache, allowNonHermeticReads);
     // Resolve the inputs to absolute paths to match TypeScript internals
     const resolvedInputs: {[path: string]: string} = {};
-    for (const key of Object.keys(inputs)) {
+    const inputKeys = Object.keys(inputs);
+    for (let i = 0; i < inputKeys.length; i++) {
+      const key = inputKeys[i];
       resolvedInputs[resolveNormalizedPath(key)] = inputs[key];
     }
     fileCache.updateCache(resolvedInputs);
@@ -117,6 +120,15 @@ export function compile({allowNonHermeticReads, allDepsCompiledWithBazel = true,
   if (!bazelOpts.es5Mode) {
     compilerOpts.annotateForClosureCompiler = true;
     compilerOpts.annotationsAs = 'static fields';
+  }
+
+  // Detect from compilerOpts whether the entrypoint is being invoked in Ivy mode.
+  const isInIvyMode = compilerOpts.enableIvy === 'ngtsc' || compilerOpts.enableIvy === 'tsc';
+
+  // Disable downleveling and Closure annotation if in Ivy mode.
+  if (isInIvyMode) {
+    compilerOpts.annotateForClosureCompiler = false;
+    compilerOpts.annotationsAs = 'decorators';
   }
 
   if (!compilerOpts.rootDirs) {
@@ -172,6 +184,14 @@ export function compile({allowNonHermeticReads, allDepsCompiledWithBazel = true,
   const bazelHost = new CompilerHost(
       files, compilerOpts, bazelOpts, tsHost, fileLoader, allowNonHermeticReads,
       generatedFileModuleResolver);
+
+  // Also need to disable decorator downleveling in the BazelHost in Ivy mode.
+  if (isInIvyMode) {
+    bazelHost.transformDecorators = false;
+  }
+
+  // Prevent tsickle adding any types at all if we don't want closure compiler annotations.
+  bazelHost.transformTypesToClosure = compilerOpts.annotateForClosureCompiler;
   const origBazelHostFileExist = bazelHost.fileExists;
   bazelHost.fileExists = (fileName: string) => {
     if (NGC_ASSETS.test(fileName)) {
@@ -180,8 +200,24 @@ export function compile({allowNonHermeticReads, allDepsCompiledWithBazel = true,
     return origBazelHostFileExist.call(bazelHost, fileName);
   };
   const origBazelHostShouldNameModule = bazelHost.shouldNameModule.bind(bazelHost);
-  bazelHost.shouldNameModule = (fileName: string) =>
-      origBazelHostShouldNameModule(fileName) || NGC_GEN_FILES.test(fileName);
+  bazelHost.shouldNameModule = (fileName: string) => {
+    // The bundle index file is synthesized in bundle_index_host so it's not in the
+    // compilationTargetSrc.
+    // However we still want to give it an AMD module name for devmode.
+    // We can't easily tell which file is the synthetic one, so we build up the path we expect
+    // it to have
+    // and compare against that.
+    if (fileName ===
+        path.join(compilerOpts.baseUrl, bazelOpts.package, compilerOpts.flatModuleOutFile + '.ts'))
+      return true;
+    // Also handle the case when angular is built from source as an external repository
+    if (fileName ===
+        path.join(
+            compilerOpts.baseUrl, 'external/angular', bazelOpts.package,
+            compilerOpts.flatModuleOutFile + '.ts'))
+      return true;
+    return origBazelHostShouldNameModule(fileName) || NGC_GEN_FILES.test(fileName);
+  };
 
   const ngHost = ng.createCompilerHost({options: compilerOpts, tsHost: bazelHost});
 
@@ -238,8 +274,12 @@ export function compile({allowNonHermeticReads, allDepsCompiledWithBazel = true,
     gatherDiagnostics = (program) =>
         gatherDiagnosticsForInputsOnly(compilerOpts, bazelOpts, program);
   }
-  const {diagnostics, emitResult, program} = ng.performCompilation(
-      {rootNames: files, options: compilerOpts, host: ngHost, emitCallback, gatherDiagnostics});
+  const {diagnostics, emitResult, program} = ng.performCompilation({
+    rootNames: files,
+    options: compilerOpts,
+    host: ngHost, emitCallback,
+    mergeEmitResultsCallback: tsickle.mergeEmitResults, gatherDiagnostics
+  });
   const tsickleEmitResult = emitResult as tsickle.EmitResult;
   let externs = '/** @externs */\n';
   if (!diagnostics.length) {
@@ -252,6 +292,16 @@ export function compile({allowNonHermeticReads, allDepsCompiledWithBazel = true,
     }
   }
 
+  // If compilation fails unexpectedly, performCompilation returns no program.
+  // Make sure not to crash but report the diagnostics.
+  if (!program) return {program, diagnostics};
+
+  if (!bazelOpts.nodeModulesPrefix) {
+    // If there is no node modules, then metadata.json should be emitted since
+    // there is no other way to obtain the information
+    generateMetadataJson(program.getTsProgram(), files, compilerOpts.rootDirs, bazelBin, tsHost);
+  }
+
   if (bazelOpts.tsickleExternsPath) {
     // Note: when tsickleExternsPath is provided, we always write a file as a
     // marker that compilation succeeded, even if it's empty (just containing an
@@ -259,11 +309,37 @@ export function compile({allowNonHermeticReads, allDepsCompiledWithBazel = true,
     fs.writeFileSync(bazelOpts.tsickleExternsPath, externs);
   }
 
-  for (const missing of writtenExpectedOuts) {
-    originalWriteFile(missing, '', false);
+  for (let i = 0; i < writtenExpectedOuts.length; i++) {
+    originalWriteFile(writtenExpectedOuts[i], '', false);
   }
 
   return {program, diagnostics};
+}
+
+/**
+ * Generate metadata.json for the specified `files`. By default, metadata.json
+ * is only generated by the compiler if --flatModuleOutFile is specified. But
+ * if compiled under blaze, we want the metadata to be generated for each
+ * Angular component.
+ */
+function generateMetadataJson(
+    program: ts.Program, files: string[], rootDirs: string[], bazelBin: string,
+    tsHost: ts.CompilerHost) {
+  const collector = new ng.MetadataCollector();
+  for (let i = 0; i < files.length; i++) {
+    const file = files[i];
+    const sourceFile = program.getSourceFile(file);
+    if (sourceFile) {
+      const metadata = collector.getMetadata(sourceFile);
+      if (metadata) {
+        const relative = relativeToRootDirs(file, rootDirs);
+        const shortPath = relative.replace(EXT, '.metadata.json');
+        const outFile = resolveNormalizedPath(bazelBin, shortPath);
+        const data = JSON.stringify(metadata);
+        tsHost.writeFile(outFile, data, false, undefined, []);
+      }
+    }
+  }
 }
 
 function isCompilationTarget(bazelOpts: BazelOptions, sf: ts.SourceFile): boolean {
@@ -281,7 +357,9 @@ function gatherDiagnosticsForInputsOnly(
   // program.getDeclarationDiagnostics() it somehow corrupts the emit.
   diagnostics.push(...tsProgram.getOptionsDiagnostics());
   diagnostics.push(...tsProgram.getGlobalDiagnostics());
-  for (const sf of tsProgram.getSourceFiles().filter(f => isCompilationTarget(bazelOpts, f))) {
+  const programFiles = tsProgram.getSourceFiles().filter(f => isCompilationTarget(bazelOpts, f));
+  for (let i = 0; i < programFiles.length; i++) {
+    const sf = programFiles[i];
     // Note: We only get the diagnostics for individual files
     // to e.g. not check libraries.
     diagnostics.push(...tsProgram.getSyntacticDiagnostics(sf));
