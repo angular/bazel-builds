@@ -1,19 +1,17 @@
 {
   "name": "@angular/bazel",
-  "version": "6.0.0-rc.5+145.sha-741fa9e",
+  "version": "7.0.0-beta.1+25.sha-ca8c683",
   "description": "Angular - bazel build rules",
   "author": "angular",
   "license": "MIT",
   "dependencies": {
-    "@bazel/typescript": "^0.11.1",
+    "@bazel/typescript": "^0.15.0",
     "@types/node": "6.0.84",
-    "@types/shelljs": "0.7.7",
-    "shelljs": "0.7.8",
     "protobufjs": "5.0.0"
   },
   "peerDependencies": {
-    "@angular/compiler-cli": "6.0.0-rc.5+145.sha-741fa9e",
-    "typescript": ">=2.7.2 <2.8"
+    "@angular/compiler-cli": "7.0.0-beta.1+25.sha-ca8c683",
+    "typescript": ">=2.7.2 <2.10"
   },
   "repository": {
     "type": "git",
