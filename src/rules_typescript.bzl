@@ -13,6 +13,10 @@ load(
     _compile_ts = "compile_ts",
     _ts_providers_dict_to_struct = "ts_providers_dict_to_struct",
 )
+load(
+    "@build_bazel_rules_typescript//internal:common/json_marshal.bzl",
+    _json_marshal = "json_marshal",
+)
 
 tsc_wrapped_tsconfig = _tsc_wrapped_tsconfig
 COMMON_ATTRIBUTES = _COMMON_ATTRIBUTES
@@ -20,3 +24,4 @@ COMMON_OUTPUTS = _COMMON_OUTPUTS
 compile_ts = _compile_ts
 DEPS_ASPECTS = _DEPS_ASPECTS
 ts_providers_dict_to_struct = _ts_providers_dict_to_struct
+json_marshal = _json_marshal
