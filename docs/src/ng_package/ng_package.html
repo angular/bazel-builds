@@ -198,7 +198,7 @@ specification of this format at <a href="https://goo.gl/jB3GVv">https://goo.gl/j
 
           <h2 id="ng_package">ng_package</h2>
 
-          <pre>ng_package(<a href="#ng_package.name">name</a>, <a href="#ng_package.deps">deps</a>, <a href="#ng_package.data">data</a>, <a href="#ng_package.srcs">srcs</a>, <a href="#ng_package.entry_point_name">entry_point_name</a>, <a href="#ng_package.globals">globals</a>, <a href="#ng_package.include_devmode_srcs">include_devmode_srcs</a>, <a href="#ng_package.readme_md">readme_md</a>)</pre>
+          <pre>ng_package(<a href="#ng_package.name">name</a>, <a href="#ng_package.deps">deps</a>, <a href="#ng_package.data">data</a>, <a href="#ng_package.srcs">srcs</a>, <a href="#ng_package.entry_point_name">entry_point_name</a>, <a href="#ng_package.globals">globals</a>, <a href="#ng_package.include_devmode_srcs">include_devmode_srcs</a>, <a href="#ng_package.ng_packager">ng_packager</a>, <a href="#ng_package.readme_md">readme_md</a>)</pre>
 
           <p>ng_package produces an npm-ready package from an Angular library.</p>
 
@@ -257,6 +257,13 @@ specification of this format at <a href="https://goo.gl/jB3GVv">https://goo.gl/j
       <td><code>include_devmode_srcs</code></td>
       <td>
         <p><code>Boolean; Optional; Default is False</code></p>
+        
+      </td>
+    </tr>
+    <tr id="ng_package.ng_packager">
+      <td><code>ng_packager</code></td>
+      <td>
+        <p><code><a href="https://bazel.build/docs/build-ref.html#labels">Label</a>; Optional; Default is @npm//@angular/bazel/bin:packager</code></p>
         
       </td>
     </tr>
