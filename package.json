@@ -1,6 +1,6 @@
 {
   "name": "@angular/bazel",
-  "version": "7.1.0-rc.0+30.sha-4390e10.with-local-changes",
+  "version": "7.1.0+34.sha-39e426c",
   "description": "Angular - bazel build rules",
   "author": "angular",
   "license": "MIT",
@@ -12,6 +12,7 @@
   },
   "typings": "./src/ngc-wrapped/index.d.ts",
   "dependencies": {
+    "@angular-devkit/architect": "^0.10.6",
     "@angular-devkit/core": "^7.0.4",
     "@angular-devkit/schematics": "^7.0.4",
     "@bazel/typescript": "^0.21.0",
@@ -21,13 +22,14 @@
     "tsickle": "0.32.1"
   },
   "peerDependencies": {
-    "@angular/compiler-cli": "7.1.0-rc.0+30.sha-4390e10.with-local-changes",
+    "@angular/compiler-cli": "7.1.0+34.sha-39e426c",
     "typescript": ">=3.1.1 <3.2"
   },
   "repository": {
     "type": "git",
     "url": "https://github.com/angular/angular.git"
   },
+  "builders": "./src/builders/builders.json",
   "schematics": "./src/schematics/collection.json",
   "ng-update": {
     "packageGroup": [
