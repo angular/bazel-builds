@@ -1,9 +1,0 @@
-{
-  "builders": {
-    "build": {
-      "class": "./index",
-      "schema": "./schema.json",
-      "description": "Executes Bazel on a target."
-    }
-  }
-}
