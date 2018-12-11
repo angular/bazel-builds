@@ -10,4 +10,10 @@
 /// <amd-module name="angular/packages/bazel/src/schematics/bazel-workspace/index" />
 import { Rule } from '@angular-devkit/schematics';
 import { Schema as BazelWorkspaceOptions } from './schema';
+/**
+ * Clean the version string and return version in the form "1.2.3". Return
+ * null if version string is invalid. This is similar to semver.clean() but
+ * takes characters like '^' and '~' into account.
+ */
+export declare function clean(version: string): string | null;
 export default function (options: BazelWorkspaceOptions): Rule;
