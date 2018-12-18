@@ -11,7 +11,7 @@
         if (v !== undefined) module.exports = v;
     }
     else if (typeof define === "function" && define.amd) {
-        define("angular/packages/bazel/src/builders/bazel", ["require", "exports", "tslib", "child_process", "rxjs"], factory);
+        define("@angular/bazel/src/builders/bazel", ["require", "exports", "tslib", "child_process", "rxjs"], factory);
     }
 })(function (require, exports) {
     "use strict";
