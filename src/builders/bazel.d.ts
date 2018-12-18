@@ -5,7 +5,7 @@
  * Use of this source code is governed by an MIT-style license that can be
  * found in the LICENSE file at https://angular.io/license
  */
-/// <amd-module name="angular/packages/bazel/src/builders/bazel" />
+/// <amd-module name="@angular/bazel/src/builders/bazel" />
 import { Observable } from 'rxjs';
 export declare type Executable = 'bazel' | 'ibazel';
 export declare type Command = 'build' | 'test' | 'run' | 'coverage' | 'query';
