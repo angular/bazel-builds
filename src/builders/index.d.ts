@@ -7,7 +7,7 @@
  *
  * @fileoverview Bazel bundle builder
  */
-/// <amd-module name="angular/packages/bazel/src/builders/index" />
+/// <amd-module name="@angular/bazel/src/builders" />
 import { BuildEvent, Builder as BuilderInterface, BuilderConfiguration, BuilderContext } from '@angular-devkit/architect';
 import { Observable } from 'rxjs';
 import { Schema } from './schema';
