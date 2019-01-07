@@ -17,10 +17,4 @@ export declare function waitForServer(port: number, timeout: number): Promise<bo
 export interface ServerSpec {
     port: number;
 }
-/**
- * Runs the specified server binary from a given workspace and waits for the server
- * being ready. The server binary will be resolved from the Bazel runfiles. Note that
- * the server will be launched with a random free port in order to support test concurrency
- * with Bazel.
- */
-export declare function runServer(workspace: string, serverTarget: string, portFlag: string, serverArgs: string[], timeout?: number): Promise<ServerSpec>;
+export declare function runServer(workspace: string, binary: string, portFlag: string, args: string[], timeout?: number): Promise<ServerSpec>;
