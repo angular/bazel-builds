@@ -1,6 +1,6 @@
 {
   "name": "@angular/bazel",
-  "version": "8.0.0-beta.0+27.sha-5b08a88",
+  "version": "8.0.0-beta.0+28.sha-366a6bf",
   "description": "Angular - bazel build rules",
   "author": "angular",
   "license": "MIT",
@@ -23,7 +23,7 @@
     "tsickle": "0.34.0"
   },
   "peerDependencies": {
-    "@angular/compiler-cli": "8.0.0-beta.0+27.sha-5b08a88",
+    "@angular/compiler-cli": "8.0.0-beta.0+28.sha-366a6bf",
     "typescript": ">=3.1.1 <3.3"
   },
   "repository": {
