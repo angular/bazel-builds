@@ -1,11 +1,20 @@
 package(default_visibility = ["//visibility:public"])
 
-load("@angular//:index.bzl", "ng_module")
+load("@npm_angular_bazel//:index.bzl", "ng_module")
 load("@build_bazel_rules_karma//:defs.bzl", "ts_web_test_suite")
 load("@build_bazel_rules_nodejs//:defs.bzl", "rollup_bundle", "history_server")
 load("@build_bazel_rules_nodejs//internal/web_package:web_package.bzl", "web_package")
 load("@build_bazel_rules_typescript//:defs.bzl", "ts_devserver", "ts_library")
 <% if (sass) { %>load("@io_bazel_rules_sass//:defs.bzl", "multi_sass_binary")
+
+filegroup(
+    name = "rxjs_umd_modules",
+    srcs = [
+        # do not sort
+        "@npm//node_modules/rxjs:bundles/rxjs.umd.js",
+        ":rxjs_shims.js",
+    ],
+)
 
 multi_sass_binary(
     name = "styles",
@@ -28,17 +37,21 @@ ng_module(
       "**/*.html",
     ])<% if (sass) { %> + [":styles"]<% } %>,
     deps = [
-        "@angular//packages/core",
-        "@angular//packages/platform-browser",<% if (routing) { %>
-        "@angular//packages/router",<% } %>
+        "@npm//@angular/core",
+        "@npm//@angular/platform-browser",<% if (routing) { %>
+        "@npm//@angular/router",<% } %>
         "@npm//@types",
+        "@npm//rxjs",
     ],
 )
 
 rollup_bundle(
     name = "bundle",
     entry_point = "src/main.prod",
-    deps = ["//src"],
+    deps = [
+        "//src",
+        "@npm//rxjs",
+    ],
 )
 
 web_package(
@@ -63,15 +76,18 @@ history_server(
 ts_devserver(
     name = "devserver",
     port = 4200,
-    additional_root_paths = [
-        "npm/node_modules/zone.js/dist",
-        "npm/node_modules/tslib",
-    ],
     entry_module = "<%= utils.underscore(name) %>/src/main.dev",
     serving_path = "/bundle.min.js",
+    scripts = [
+        "@npm//node_modules/@angular/common:bundles/common.umd.js",
+        "@npm//node_modules/@angular/common:bundles/common-http.umd.js",
+        "@npm//node_modules/@angular/core:bundles/core.umd.js",
+        "@npm//node_modules/@angular/platform-browser:bundles/platform-browser.umd.js",
+        "@npm//node_modules/tslib:tslib.js",
+        ":rxjs_umd_modules",
+    ],
     static_files = [
         "@npm//node_modules/zone.js:dist/zone.min.js",
-        "@npm//node_modules/tslib:tslib.js",
     ],
     index_html = "index.html",
     deps = [":src"],
@@ -83,7 +99,7 @@ ts_library(
     srcs = glob(["**/*.spec.ts"]),
     deps = [
         ":src",
-        "@angular//packages/core/testing",
+        "@npm//@angular/core",
         "@npm//@types",
     ],
 )
@@ -95,15 +111,26 @@ ts_library(
         "initialize_testbed.ts",
     ],
     deps = [
-        "@angular//packages/core/testing",
-        "@angular//packages/platform-browser-dynamic/testing",
+        "@npm//@angular/core",
+        "@npm//@angular/platform-browser-dynamic",
         "@npm//@types",
     ],
 )
 
 ts_web_test_suite(
     name = "test",
-    srcs = ["@npm//node_modules/tslib:tslib.js"],
+    srcs = [
+        "@npm//node_modules/@angular/common:bundles/common.umd.js",
+        "@npm//node_modules/@angular/compiler:bundles/compiler.umd.js",
+        "@npm//node_modules/@angular/compiler:bundles/compiler-testing.umd.js",
+        "@npm//node_modules/@angular/core:bundles/core.umd.js",
+        "@npm//node_modules/@angular/core:bundles/core-testing.umd.js",
+        "@npm//node_modules/@angular/platform-browser:bundles/platform-browser.umd.js",
+        "@npm//node_modules/@angular/platform-browser:bundles/platform-browser-testing.umd.js",
+        "@npm//node_modules/@angular/platform-browser-dynamic:bundles/platform-browser-dynamic.umd.js",
+        "@npm//node_modules/@angular/platform-browser-dynamic:bundles/platform-browser-dynamic-testing.umd.js",
+        "@npm//node_modules/tslib:tslib.js",
+    ],
     runtime_deps = [
         ":initialize_testbed",
     ],
@@ -116,6 +143,7 @@ ts_web_test_suite(
         "@io_bazel_rules_webtesting//browsers:chromium-local",
     ],
     deps = [
+        ":rxjs_umd_modules",
         ":test_lib",
         "@npm//karma-jasmine",
     ],

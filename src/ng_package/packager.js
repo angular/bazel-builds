@@ -41,7 +41,7 @@ var __spread = (this && this.__spread) || function () {
         if (v !== undefined) module.exports = v;
     }
     else if (typeof define === "function" && define.amd) {
-        define("angular/packages/bazel/src/ng_package/packager", ["require", "exports", "fs", "path", "shelljs"], factory);
+        define("npm_angular_bazel/src/ng_package/packager", ["require", "exports", "fs", "path", "shelljs"], factory);
     }
 })(function (require, exports) {
     "use strict";
