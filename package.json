@@ -1,6 +1,6 @@
 {
   "name": "@angular/bazel",
-  "version": "8.0.0-beta.4+43.sha-2d80419",
+  "version": "8.0.0-beta.4+44.sha-1eccf64",
   "description": "Angular - bazel build rules",
   "author": "angular",
   "license": "MIT",
@@ -11,6 +11,12 @@
     "modify_tsconfig": "./src/modify_tsconfig.js"
   },
   "typings": "./src/ngc-wrapped/index.d.ts",
+  "bazelWorkspaces": {
+    "npm_angular_bazel": {
+      "version": "8.0.0-beta.4+44.sha-1eccf64",
+      "rootPath": "."
+    }
+  },
   "dependencies": {
     "@angular-devkit/architect": "^0.10.6",
     "@angular-devkit/core": "^7.0.4",
@@ -24,7 +30,7 @@
     "tsickle": "0.34.0"
   },
   "peerDependencies": {
-    "@angular/compiler-cli": "8.0.0-beta.4+43.sha-2d80419",
+    "@angular/compiler-cli": "8.0.0-beta.4+44.sha-1eccf64",
     "typescript": ">=3.1.1 <3.3"
   },
   "repository": {
@@ -54,8 +60,5 @@
       "@angular/language-service",
       "@angular/service-worker"
     ]
-  },
-  "scripts": {
-    "postinstall": "node ./check_version.js"
   }
 }
