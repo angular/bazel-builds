@@ -13,7 +13,7 @@
         if (v !== undefined) module.exports = v;
     }
     else if (typeof define === "function" && define.amd) {
-        define("angular/packages/bazel/src/schematics/ng-new/index", ["require", "exports", "@angular-devkit/schematics", "@schematics/angular/utility/validation"], factory);
+        define("npm_angular_bazel/src/schematics/ng-new/index", ["require", "exports", "@angular-devkit/schematics", "@schematics/angular/utility/validation"], factory);
     }
 })(function (require, exports) {
     "use strict";

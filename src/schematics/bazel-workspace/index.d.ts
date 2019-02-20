@@ -7,7 +7,7 @@
  *
  * @fileoverview Schematics for bazel-workspace
  */
-/// <amd-module name="angular/packages/bazel/src/schematics/bazel-workspace/index" />
+/// <amd-module name="npm_angular_bazel/src/schematics/bazel-workspace/index" />
 import { Rule } from '@angular-devkit/schematics';
 import { Schema as BazelWorkspaceOptions } from './schema';
 /**
