@@ -7,7 +7,7 @@
  *
  * @fileoverview Schematics for ng-new project that builds with Bazel.
  */
-/// <amd-module name="angular/packages/bazel/src/schematics/ng-new/index" />
+/// <amd-module name="npm_angular_bazel/src/schematics/ng-new/index" />
 import { Rule } from '@angular-devkit/schematics';
 import { Schema } from './schema';
 export default function (options: Schema): Rule;
