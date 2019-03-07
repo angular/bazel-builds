@@ -14,6 +14,6 @@ import { Schema } from './schema';
 declare class BazelBuilder implements Builder<Schema> {
     private context;
     constructor(context: BuilderContext);
-    run(builderConfig: BuilderConfiguration<Partial<Schema>>): Observable<BuildEvent>;
+    run(config: BuilderConfiguration<Partial<Schema>>): Observable<BuildEvent>;
 }
 export default BazelBuilder;
