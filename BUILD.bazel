@@ -33,7 +33,6 @@ npm_package(
         "//src/ng_package:lib",
         "//src/ngc-wrapped:ngc_lib",
         "//src/protractor/utils",
-        "//src/schematics/bazel-workspace",
         "//src/schematics/ng-add",
         "//src/schematics/ng-new",
     ],
