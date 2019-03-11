@@ -125,7 +125,7 @@ determines which mode is active.</p>
 
           <h2 id="ngc_compile_action">ngc_compile_action</h2>
 
-          <pre>ngc_compile_action(<a href="#ngc_compile_action.ctx">ctx</a>, <a href="#ngc_compile_action.label">label</a>, <a href="#ngc_compile_action.inputs">inputs</a>, <a href="#ngc_compile_action.outputs">outputs</a>, <a href="#ngc_compile_action.messages_out">messages_out</a>, <a href="#ngc_compile_action.tsconfig_file">tsconfig_file</a>, <a href="#ngc_compile_action.node_opts">node_opts</a>, <a href="#ngc_compile_action.locale">locale</a>, <a href="#ngc_compile_action.i18n_args">i18n_args</a>, <a href="#ngc_compile_action.dts_bundle_out">dts_bundle_out</a>)</pre>
+          <pre>ngc_compile_action(<a href="#ngc_compile_action.ctx">ctx</a>, <a href="#ngc_compile_action.label">label</a>, <a href="#ngc_compile_action.inputs">inputs</a>, <a href="#ngc_compile_action.outputs">outputs</a>, <a href="#ngc_compile_action.messages_out">messages_out</a>, <a href="#ngc_compile_action.tsconfig_file">tsconfig_file</a>, <a href="#ngc_compile_action.node_opts">node_opts</a>, <a href="#ngc_compile_action.locale">locale</a>, <a href="#ngc_compile_action.i18n_args">i18n_args</a>, <a href="#ngc_compile_action.dts_bundles_out">dts_bundles_out</a>)</pre>
 
           <p>Helper function to create the ngc action.</p>
 <p>This is exposed for google3 to wire up i18n replay rules, and is not intended
@@ -205,8 +205,8 @@ as part of the public API.</p>
         <p>additional command-line arguments to ngc</p>
       </td>
     </tr>
-    <tr id="ngc_compile_action.dts_bundle_out">
-      <td><code>dts_bundle_out</code></td>
+    <tr id="ngc_compile_action.dts_bundles_out">
+      <td><code>dts_bundles_out</code></td>
       <td>
         <p><code>Unknown; Optional</code></p>
         <p>produced flattened dts file</p>
