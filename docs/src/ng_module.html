@@ -256,7 +256,7 @@ and is not meant as a public API.</p>
 
           <h2 id="ng_module">ng_module</h2>
 
-          <pre>ng_module(<a href="#ng_module.name">name</a>, <a href="#ng_module.deps">deps</a>, <a href="#ng_module.srcs">srcs</a>, <a href="#ng_module.assets">assets</a>, <a href="#ng_module.bundle_dts">bundle_dts</a>, <a href="#ng_module.compiler">compiler</a>, <a href="#ng_module.entry_point">entry_point</a>, <a href="#ng_module.factories">factories</a>, <a href="#ng_module.filter_summaries">filter_summaries</a>, <a href="#ng_module.flat_module_out_file">flat_module_out_file</a>, <a href="#ng_module.inline_resources">inline_resources</a>, <a href="#ng_module.ng_xi18n">ng_xi18n</a>, <a href="#ng_module.no_i18n">no_i18n</a>, <a href="#ng_module.node_modules">node_modules</a>, <a href="#ng_module.tsconfig">tsconfig</a>, <a href="#ng_module.type_check">type_check</a>)</pre>
+          <pre>ng_module(<a href="#ng_module.name">name</a>, <a href="#ng_module.deps">deps</a>, <a href="#ng_module.srcs">srcs</a>, <a href="#ng_module.api_extractor">api_extractor</a>, <a href="#ng_module.assets">assets</a>, <a href="#ng_module.bundle_dts">bundle_dts</a>, <a href="#ng_module.compiler">compiler</a>, <a href="#ng_module.entry_point">entry_point</a>, <a href="#ng_module.factories">factories</a>, <a href="#ng_module.filter_summaries">filter_summaries</a>, <a href="#ng_module.flat_module_out_file">flat_module_out_file</a>, <a href="#ng_module.inline_resources">inline_resources</a>, <a href="#ng_module.ng_xi18n">ng_xi18n</a>, <a href="#ng_module.no_i18n">no_i18n</a>, <a href="#ng_module.node_modules">node_modules</a>, <a href="#ng_module.tsconfig">tsconfig</a>, <a href="#ng_module.type_check">type_check</a>)</pre>
 
           <p>Run the Angular AOT template compiler.</p>
 <p>This rule extends the <a href="http://tsetse.info/api/build_defs.html#ts_library">ts_library</a> rule.</p>
@@ -288,6 +288,13 @@ and is not meant as a public API.</p>
       <td><code>srcs</code></td>
       <td>
         <p><code>List of <a href="https://bazel.build/docs/build-ref.html#labels">labels</a>; Optional; Default is []</code></p>
+        
+      </td>
+    </tr>
+    <tr id="ng_module.api_extractor">
+      <td><code>api_extractor</code></td>
+      <td>
+        <p><code><a href="https://bazel.build/docs/build-ref.html#labels">Label</a>; Optional; Default is </code></p>
         
       </td>
     </tr>
