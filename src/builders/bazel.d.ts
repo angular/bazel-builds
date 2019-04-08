@@ -13,7 +13,7 @@ export declare type Command = 'build' | 'test' | 'run' | 'coverage' | 'query';
 /**
  * Spawn the Bazel process. Trap SINGINT to make sure Bazel process is killed.
  */
-export declare function runBazel(projectDir: Path, binary: Path, command: Command, workspaceTarget: string, flags: string[]): Promise<{}>;
+export declare function runBazel(projectDir: Path, binary: string, command: Command, workspaceTarget: string, flags: string[]): Promise<{}>;
 /**
  * Resolves the path to `@bazel/bazel` or `@bazel/ibazel`.
  */
