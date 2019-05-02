@@ -1,0 +1,21 @@
+package(default_visibility = ["//visibility:public"])
+
+load("@build_bazel_rules_nodejs//:defs.bzl", "nodejs_binary")
+
+
+nodejs_binary(
+    name = "packager",
+    data = [
+        "lib",
+        "@npm//shelljs",
+    ],
+    entry_point = "npm_angular_bazel/src/ng_package/packager.js",
+    install_source_map_support = False,
+)
+
+exports_files(["ng_package.bzl"])
+
+filegroup(
+    name = "package_assets",
+    srcs = glob(["*.bzl"]) + ["BUILD.bazel"],
+)
