@@ -14,7 +14,7 @@ export declare function runOneBuild(args: string[], inputs?: {
     [path: string]: string;
 }): boolean;
 export declare function relativeToRootDirs(filePath: string, rootDirs: string[]): string;
-export declare function compile({ allDepsCompiledWithBazel, compilerOpts, tsHost, bazelOpts, files, inputs, expectedOuts, gatherDiagnostics, bazelHost }: {
+export declare function compile({ allDepsCompiledWithBazel, compilerOpts, tsHost, bazelOpts, files, inputs, expectedOuts, gatherDiagnostics, oldBazelHost }: {
     allDepsCompiledWithBazel?: boolean;
     compilerOpts: ng.CompilerOptions;
     tsHost: ts.CompilerHost;
@@ -25,7 +25,7 @@ export declare function compile({ allDepsCompiledWithBazel, compilerOpts, tsHost
     files: string[];
     expectedOuts: string[];
     gatherDiagnostics?: (program: ng.Program) => ng.Diagnostics;
-    bazelHost?: CompilerHost;
+    oldBazelHost?: CompilerHost;
 }): {
     diagnostics: ng.Diagnostics;
     program: ng.Program;

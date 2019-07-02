@@ -13,7 +13,6 @@ load(
     "DEFAULT_NG_COMPILER",
     "DEFAULT_NG_XI18N",
     "DEPS_ASPECTS",
-    "NodeModuleInfo",
     "NodeModuleSources",
     "TsConfigInfo",
     "collect_node_modules_aspect",
@@ -269,7 +268,7 @@ def _expected_outs(ctx):
     # TODO(alxhub): i18n is only produced by the legacy compiler currently. This should be re-enabled
     # when ngtsc can extract messages
     if is_legacy_ngc:
-        i18n_messages_files = [ctx.new_file(ctx.genfiles_dir, ctx.label.name + "_ngc_messages.xmb")]
+        i18n_messages_files = [ctx.actions.declare_file(ctx.label.name + "_ngc_messages.xmb")]
     else:
         i18n_messages_files = []
 
@@ -432,17 +431,14 @@ def ngc_compile_action(
             executable = ctx.executable.ng_xi18n,
             arguments = (_EXTRA_NODE_OPTIONS_FLAGS +
                          [tsconfig_file.path] +
-                         # The base path is bin_dir because of the way the ngc
-                         # compiler host is configured. So we need to explicitly
-                         # point to genfiles/ to redirect the output.
-                         ["../genfiles/" + messages_out[0].short_path]),
+                         [messages_out[0].short_path]),
             progress_message = "Extracting Angular 2 messages (ng_xi18n)",
             mnemonic = "Angular2MessageExtractor",
         )
 
     if dts_bundles_out != None:
         # combine the inputs and outputs and filter .d.ts and json files
-        filter_inputs = [f for f in list(inputs) + outputs if f.path.endswith(".d.ts") or f.path.endswith(".json")]
+        filter_inputs = [f for f in inputs.to_list() + outputs if f.path.endswith(".d.ts") or f.path.endswith(".json")]
 
         if _should_produce_flat_module_outs(ctx):
             dts_entry_points = ["%s.d.ts" % _flat_module_out_file(ctx)]
@@ -560,13 +556,7 @@ def ng_module_impl(ctx, ts_compile_actions):
     providers = ts_compile_actions(
         ctx,
         is_library = True,
-        # Filter out the node_modules from deps passed to TypeScript compiler
-        # since they don't have the required providers.
-        # They were added to the action inputs for tsc_wrapped already.
-        # strict_deps checking currently skips node_modules.
-        # TODO(alexeagle): turn on strict deps checking when we have a real
-        # provider for JS/DTS inputs to ts_library.
-        deps = [d for d in ctx.attr.deps if not NodeModuleInfo in d],
+        deps = ctx.attr.deps,
         compile_action = _prodmode_compile_action,
         devmode_compile_action = _devmode_compile_action,
         tsc_wrapped_tsconfig = _ngc_tsconfig,
