@@ -36,7 +36,7 @@ load("//src/ng_package:collect-type-definitions.bzl", "collect_type_definitions"
 # Prints a debug message if "--define=VERBOSE_LOGS=true" is specified.
 def _debug(vars, *args):
     if "VERBOSE_LOGS" in vars.keys():
-        print("[ng_package.bzl]", *args)
+        print("[ng_package.bzl]", args)
 
 _DEFAULT_NG_PACKAGER = "@npm//@angular/bazel/bin:packager"
 
