@@ -20,6 +20,7 @@ load(
     "ts_providers_dict_to_struct",
     "tsc_wrapped_tsconfig",
 )
+load("@build_bazel_rules_nodejs//:providers.bzl", "transitive_js_ecma_script_module_info")
 
 _FLAT_DTS_FILE_SUFFIX = ".bundle.d.ts"
 _R3_SYMBOLS_DTS_FILE = "src/r3_symbols.d.ts"
@@ -237,7 +238,7 @@ def _expected_outs(ctx):
             continue
 
         filter_summaries = ctx.attr.filter_summaries
-        closure_js = [f.replace(".js", ".closure.js") for f in devmode_js if not filter_summaries or not f.endswith(".ngsummary.js")]
+        closure_js = [f.replace(".js", ".mjs") for f in devmode_js if not filter_summaries or not f.endswith(".ngsummary.js")]
         declarations = [f.replace(".js", ".d.ts") for f in devmode_js]
 
         devmode_js_files += [ctx.actions.declare_file(basename + ext) for ext in devmode_js]
@@ -262,7 +263,7 @@ def _expected_outs(ctx):
     if _should_produce_flat_module_outs(ctx):
         flat_module_out = _flat_module_out_file(ctx)
         devmode_js_files.append(ctx.actions.declare_file("%s.js" % flat_module_out))
-        closure_js_files.append(ctx.actions.declare_file("%s.closure.js" % flat_module_out))
+        closure_js_files.append(ctx.actions.declare_file("%s.mjs" % flat_module_out))
         bundle_index_typings = ctx.actions.declare_file("%s.d.ts" % flat_module_out)
         declaration_files.append(bundle_index_typings)
         if is_legacy_ngc:
@@ -612,7 +613,17 @@ def ng_module_impl(ctx, ts_compile_actions):
     return providers
 
 def _ng_module_impl(ctx):
-    return ts_providers_dict_to_struct(ng_module_impl(ctx, compile_ts))
+    ts_providers = ng_module_impl(ctx, compile_ts)
+
+    # Add in new JS providers
+    ts_providers["providers"].extend([
+        transitive_js_ecma_script_module_info(
+            sources = ts_providers["typescript"]["es6_sources"],
+            deps = ctx.attr.deps,
+        ),
+    ])
+
+    return ts_providers_dict_to_struct(ts_providers)
 
 local_deps_aspects = [collect_node_modules_aspect, _collect_summaries_aspect]
 
