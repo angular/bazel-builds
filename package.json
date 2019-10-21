@@ -1,0 +1,68 @@
+{
+  "name": "@angular/bazel",
+  "version": "9.0.0-next.12+25.sha-f76df9e.with-local-changes",
+  "description": "Angular - bazel build rules",
+  "author": "angular",
+  "license": "MIT",
+  "bin": {
+    "api-extractor": "./src/api-extractor/index.js",
+    "ngc-wrapped": "./src/ngc-wrapped/index.js",
+    "packager": "./src/ng_package/packager.js",
+    "xi18n": "./src/ngc-wrapped/extract_i18n.js",
+    "modify_tsconfig": "./src/modify_tsconfig.js"
+  },
+  "typings": "./src/ngc-wrapped/index.d.ts",
+  "bazelBin": {
+    "ngc-wrapped": {
+      "additionalAttributes": {
+        "configuration_env_vars": "[\"compile\"]"
+      }
+    }
+  },
+  "bazelWorkspaces": {
+    "npm_angular_bazel": {
+      "version": "9.0.0-next.12+25.sha-f76df9e.with-local-changes",
+      "rootPath": "."
+    }
+  },
+  "dependencies": {
+    "@microsoft/api-extractor": "^7.3.9",
+    "shelljs": "0.8.2",
+    "tsickle": "^0.37.0"
+  },
+  "peerDependencies": {
+    "@angular/compiler-cli": "9.0.0-next.12+25.sha-f76df9e.with-local-changes",
+    "@bazel/typescript": "0.*",
+    "typescript": ">=3.6 <3.7"
+  },
+  "devDependencies": {
+
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/angular/angular.git"
+  },
+  "builders": "./src/builders/builders.json",
+  "schematics": "./src/schematics/collection.json",
+  "ng-update": {
+    "packageGroup": [
+      "@angular/core",
+      "@angular/bazel",
+      "@angular/common",
+      "@angular/compiler",
+      "@angular/compiler-cli",
+      "@angular/animations",
+      "@angular/elements",
+      "@angular/platform-browser",
+      "@angular/platform-browser-dynamic",
+      "@angular/forms",
+      "@angular/platform-server",
+      "@angular/platform-webworker",
+      "@angular/platform-webworker-dynamic",
+      "@angular/upgrade",
+      "@angular/router",
+      "@angular/language-service",
+      "@angular/service-worker"
+    ]
+  }
+}
