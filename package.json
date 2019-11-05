@@ -1,6 +1,6 @@
 {
   "name": "@angular/bazel",
-  "version": "9.0.0-rc.0+62.sha-d751ca7.with-local-changes",
+  "version": "9.0.0-rc.0+63.sha-3de72e4.with-local-changes",
   "description": "Angular - bazel build rules",
   "author": "angular",
   "license": "MIT",
@@ -21,7 +21,7 @@
   },
   "bazelWorkspaces": {
     "npm_angular_bazel": {
-      "version": "9.0.0-rc.0+62.sha-d751ca7.with-local-changes",
+      "version": "9.0.0-rc.0+63.sha-3de72e4.with-local-changes",
       "rootPath": "."
     }
   },
@@ -31,13 +31,12 @@
     "tsickle": "^0.37.0"
   },
   "peerDependencies": {
-    "@angular/compiler-cli": "9.0.0-rc.0+62.sha-d751ca7.with-local-changes",
+    "@angular/compiler-cli": "9.0.0-rc.0+63.sha-3de72e4.with-local-changes",
     "@bazel/typescript": "0.*",
-    "typescript": ">=3.6 <3.7",
-    "rollup": ">=1.20.0",
-    "rollup-plugin-commonjs": ">=9.0.0",
-    "rollup-plugin-node-resolve": ">=4.2.0",
-    "rollup-plugin-sourcemaps": ">=0.4.0"
+    "typescript": ">=3.6 <3.7"
+  },
+  "devDependencies": {
+
   },
   "repository": {
     "type": "git",
