@@ -1,6 +1,6 @@
 {
   "name": "@angular/bazel",
-  "version": "9.0.0-rc.3+76.sha-b659aa3.with-local-changes",
+  "version": "9.0.0-rc.3+98.sha-9e5065a.with-local-changes",
   "description": "Angular - bazel build rules",
   "author": "angular",
   "license": "MIT",
@@ -15,13 +15,13 @@
   "bazelBin": {
     "ngc-wrapped": {
       "additionalAttributes": {
-        "configuration_env_vars": "[\"compile\"]"
+        "configuration_env_vars": "[\"angular_ivy_enabled\"]"
       }
     }
   },
   "bazelWorkspaces": {
     "npm_angular_bazel": {
-      "version": "9.0.0-rc.3+76.sha-b659aa3.with-local-changes",
+      "version": "9.0.0-rc.3+98.sha-9e5065a.with-local-changes",
       "rootPath": "."
     }
   },
@@ -31,7 +31,7 @@
     "tsickle": "^0.37.1"
   },
   "peerDependencies": {
-    "@angular/compiler-cli": "9.0.0-rc.3+76.sha-b659aa3.with-local-changes",
+    "@angular/compiler-cli": "9.0.0-rc.3+98.sha-9e5065a.with-local-changes",
     "@bazel/typescript": "0.*",
     "terser": "^4.3.1",
     "typescript": ">=3.6 <3.7",
