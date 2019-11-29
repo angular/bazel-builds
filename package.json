@@ -1,0 +1,79 @@
+{
+  "name": "@angular/bazel",
+  "version": "9.0.0-rc.1+307.sha-06ddaf3.with-local-changes",
+  "description": "Angular - bazel build rules",
+  "author": "angular",
+  "license": "MIT",
+  "bin": {
+    "api-extractor": "./src/api-extractor/index.js",
+    "ngc-wrapped": "./src/ngc-wrapped/index.js",
+    "packager": "./src/ng_package/packager.js",
+    "xi18n": "./src/ngc-wrapped/extract_i18n.js",
+    "modify_tsconfig": "./src/modify_tsconfig.js"
+  },
+  "typings": "./src/ngc-wrapped/index.d.ts",
+  "bazelBin": {
+    "ngc-wrapped": {
+      "additionalAttributes": {
+        "configuration_env_vars": "[\"angular_ivy_enabled\"]"
+      }
+    }
+  },
+  "bazelWorkspaces": {
+    "npm_angular_bazel": {
+      "version": "9.0.0-rc.1+307.sha-06ddaf3.with-local-changes",
+      "rootPath": "."
+    }
+  },
+  "dependencies": {
+    "@microsoft/api-extractor": "^7.3.9",
+    "shelljs": "0.8.2",
+    "tsickle": "^0.37.1"
+  },
+  "peerDependencies": {
+    "@angular/compiler-cli": "9.0.0-rc.1+307.sha-06ddaf3.with-local-changes",
+    "@bazel/typescript": "0.*",
+    "terser": "^4.3.1",
+    "typescript": ">=3.6 <3.7",
+    "rollup": ">=1.20.0",
+    "rollup-plugin-commonjs": ">=9.0.0",
+    "rollup-plugin-node-resolve": ">=4.2.0",
+    "rollup-plugin-sourcemaps": ">=0.4.0"
+  },
+  "peerDependenciesMeta": {
+    "terser": {
+      "optional": true
+    }
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/angular/angular.git"
+  },
+  "builders": "./src/builders/builders.json",
+  "schematics": "./src/schematics/collection.json",
+  "ng-update": {
+    "packageGroup": [
+      "@angular/core",
+      "@angular/bazel",
+      "@angular/common",
+      "@angular/compiler",
+      "@angular/compiler-cli",
+      "@angular/animations",
+      "@angular/elements",
+      "@angular/platform-browser",
+      "@angular/platform-browser-dynamic",
+      "@angular/forms",
+      "@angular/platform-server",
+      "@angular/platform-webworker",
+      "@angular/platform-webworker-dynamic",
+      "@angular/upgrade",
+      "@angular/router",
+      "@angular/language-service",
+      "@angular/localize",
+      "@angular/service-worker"
+    ]
+  },
+  "publishConfig":{
+    "registry":"https://wombat-dressing-room.appspot.com"
+  }
+}
