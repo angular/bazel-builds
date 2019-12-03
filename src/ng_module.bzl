@@ -35,9 +35,17 @@ def is_ivy_enabled(ctx):
     Returns:
       Boolean, Whether the ivy compiler should be used.
     """
+    if "compile" in ctx.var and ctx.workspace_name == "angular":
+        fail(
+            msg = "Setting ViewEngine/Ivy using --define=compile is deprecated, please use " +
+                  "--config=ivy or --config=view-engine instead.",
+            attr = "ng_module",
+        )
 
     # TODO(josephperrott): Remove configuration via compile=aot define flag.
     if ctx.var.get("compile", None) == "aot":
+        print("Setting ViewEngine/Ivy using the compile build variable (--define=compile=*) " +
+              "is deprecated, please use the --define=angular_ivy_enabled=True instead.")
         return True
 
     if ctx.var.get("angular_ivy_enabled", None) == "True":
@@ -297,9 +305,9 @@ def _ngc_tsconfig(ctx, files, srcs, **kwargs):
         "enableSummariesForJit": is_legacy_ngc,
         "enableIvy": is_ivy_enabled(ctx),
         "fullTemplateTypeCheck": ctx.attr.type_check,
-        # TODO(alxhub/arick): template type-checking for Ivy needs to be tested in g3 before it can
-        # be enabled here.
-        "ivyTemplateTypeCheck": False,
+        # TODO(alxhub/arick): template type-checking in g3 is currently disabled because of
+        # preexisting failures. Reenable once g3 is fixed: FW-1753
+        "ivyTemplateTypeCheck": _is_bazel(),
         # In Google3 we still want to use the symbol factory re-exports in order to
         # not break existing apps inside Google. Unlike Bazel, Google3 does not only
         # enforce strict dependencies of source files, but also for generated files
