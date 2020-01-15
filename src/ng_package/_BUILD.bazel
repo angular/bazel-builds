@@ -10,7 +10,6 @@ nodejs_binary(
         "@npm//shelljs",
     ],
     entry_point = ":packager.ts",
-    install_source_map_support = False,
 )
 
 nodejs_binary(
@@ -22,7 +21,6 @@ nodejs_binary(
         "@npm//rollup-plugin-sourcemaps",
     ],
     entry_point = "@npm//:node_modules/rollup/dist/bin/rollup",
-    install_source_map_support = False,
 )
 
 exports_files([
