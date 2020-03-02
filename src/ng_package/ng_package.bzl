@@ -77,7 +77,7 @@ def _convert_dash_case_to_camel_case(s):
     parts = s.split("-")
 
     # First letter in the result is always unchanged
-    return s[0] + "".join([p.title() for p in parts])[1:]
+    return s[0] + "".join([p.capitalize() for p in parts])[1:]
 
 # Convert from a package name on npm to an identifier that's a legal global symbol
 #  @angular/core -> ng.core
@@ -640,7 +640,7 @@ _NG_PACKAGE_ATTRS = dict(PKG_NPM_ATTRS, **{
     "entry_point": attr.label(
         doc = """The starting point of the application, passed as the `--input` flag to rollup.
 
-        If the entry JavaScript file belongs to the same package (as the BUILD file), 
+        If the entry JavaScript file belongs to the same package (as the BUILD file),
         you can simply reference it by its relative name to the package directory:
 
         ```
@@ -668,7 +668,7 @@ _NG_PACKAGE_ATTRS = dict(PKG_NPM_ATTRS, **{
 
         The rule will use the corresponding `.js` output of the ts_library rule as the entry point.
 
-        If the entry point target is a rule, it should produce a single JavaScript entry file that will be passed to the nodejs_binary rule. 
+        If the entry point target is a rule, it should produce a single JavaScript entry file that will be passed to the nodejs_binary rule.
         For example:
 
         ```
@@ -699,7 +699,7 @@ _NG_PACKAGE_ATTRS = dict(PKG_NPM_ATTRS, **{
         doc = """A .txt file passed to the `banner` config option of rollup.
         The contents of the file will be copied to the top of the resulting bundles.
         Note that you can replace a version placeholder in the license file, by using
-        the special version `9.0.4+14.sha-e13fcba`. See the section on stamping in the README.""",
+        the special version `9.0.4+22.sha-48025eb`. See the section on stamping in the README.""",
         allow_single_file = [".txt"],
     ),
     "deps": attr.label_list(
