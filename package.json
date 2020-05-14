@@ -1,6 +1,6 @@
 {
   "name": "@angular/bazel",
-  "version": "10.0.0-next.7+17.sha-2418c6a",
+  "version": "10.0.0-next.7+43.sha-f16ca1c",
   "description": "Angular - bazel build rules",
   "author": "angular",
   "license": "MIT",
@@ -21,20 +21,20 @@
   },
   "bazelWorkspaces": {
     "npm_angular_bazel": {
-      "version": "10.0.0-next.7+17.sha-2418c6a",
+      "version": "10.0.0-next.7+43.sha-f16ca1c",
       "rootPath": "."
     }
   },
   "dependencies": {
-    "@microsoft/api-extractor": "^7.3.9",
+    "@microsoft/api-extractor": "^7.7.13",
     "shelljs": "0.8.2",
     "tsickle": "^0.38.0"
   },
   "peerDependencies": {
-    "@angular/compiler-cli": "10.0.0-next.7+17.sha-2418c6a",
+    "@angular/compiler-cli": "10.0.0-next.7+43.sha-f16ca1c",
     "@bazel/typescript": ">=1.0.0",
     "terser": "^4.3.1",
-    "typescript": ">=3.8 <3.9",
+    "typescript": ">=3.8 <4.0",
     "rollup": ">=1.20.0",
     "rollup-plugin-commonjs": ">=9.0.0",
     "rollup-plugin-node-resolve": ">=4.2.0",
@@ -77,7 +77,7 @@
       "@angular/service-worker"
     ]
   },
-  "publishConfig":{
-    "registry":"https://wombat-dressing-room.appspot.com"
+  "publishConfig": {
+    "registry": "https://wombat-dressing-room.appspot.com"
   }
 }
