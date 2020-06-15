@@ -1,6 +1,6 @@
 {
   "name": "@angular/bazel",
-  "version": "10.0.0-rc.0+174.sha-adc9d5c",
+  "version": "10.0.0-rc.0+177.sha-a7faa6b",
   "description": "Angular - bazel build rules",
   "author": "angular",
   "license": "MIT",
@@ -21,7 +21,7 @@
   },
   "bazelWorkspaces": {
     "npm_angular_bazel": {
-      "version": "10.0.0-rc.0+174.sha-adc9d5c",
+      "version": "10.0.0-rc.0+177.sha-a7faa6b",
       "rootPath": "."
     }
   },
@@ -31,7 +31,7 @@
     "tsickle": "^0.38.0"
   },
   "peerDependencies": {
-    "@angular/compiler-cli": "10.0.0-rc.0+174.sha-adc9d5c",
+    "@angular/compiler-cli": "10.0.0-rc.0+177.sha-a7faa6b",
     "@bazel/typescript": ">=1.0.0",
     "terser": "^4.3.1",
     "typescript": ">=3.9 <4.0",
