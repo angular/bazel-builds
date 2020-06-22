@@ -14,6 +14,7 @@ const sourcemaps = require('rollup-plugin-sourcemaps');
 const commonjs = require('rollup-plugin-commonjs');
 const path = require('path');
 const fs = require('fs');
+const ts = require('typescript');
 
 function log_verbose(...m) {
   // This is a template file so we use __filename to output the actual filename
@@ -25,6 +26,7 @@ const rootDir = 'TMPL_root_dir';
 const bannerFile = TMPL_banner_file;
 const stampData = TMPL_stamp_data;
 const moduleMappings = TMPL_module_mappings;
+const downlevelToEs5 = TMPL_downlevel_to_es5;
 const nodeModulesRoot = 'TMPL_node_modules_root';
 
 log_verbose(`running with
@@ -139,10 +141,32 @@ if (bannerFile) {
     // Don't assume BUILD_SCM_VERSION exists
     if (versionTag) {
       const version = versionTag.split(' ')[1].trim();
-      banner = banner.replace(/10.0.0-rc.0+200.sha-7e0eccc/, version);
+      banner = banner.replace(/10.0.0-rc.0+208.sha-fd65958/, version);
     }
   }
 }
+
+// Transform that is enabled for UMD bundle processing. It transforms existing ES2015
+// prodmode output to ESM5 so that the resulting UMD bundles are using ES5 format.
+const downlevelToEs5Plugin = {
+  name: 'downlevel-to-es5',
+  transform: (code, filePath) => {
+    const compilerOptions = {
+      target: ts.ScriptTarget.ES5,
+      module: ts.ModuleKind.ES2015,
+      allowJs: true,
+      sourceMap: true,
+      downlevelIteration: true,
+      importHelpers: true,
+      mapRoot: path.dirname(filePath),
+    };
+    const {outputText, sourceMapText} = ts.transpileModule(code, {compilerOptions});
+    return {
+      code: outputText,
+      map: JSON.parse(sourceMapText),
+    };
+  },
+};
 
 const plugins = [
   {
@@ -157,6 +181,11 @@ const plugins = [
   commonjs({ignoreGlobal: true}),
   sourcemaps(),
 ];
+
+// If downleveling to ES5 is enabled, set up the downlevel rollup plugin.
+if (downlevelToEs5) {
+  plugins.push(downlevelToEs5Plugin);
+}
 
 const config = {
   plugins,
