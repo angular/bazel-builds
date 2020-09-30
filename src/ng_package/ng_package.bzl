@@ -102,8 +102,6 @@ WELL_KNOWN_GLOBALS = {p: _global_name(p) for p in [
     "@angular/core",
     "@angular/platform-server/testing",
     "@angular/platform-server",
-    "@angular/platform-webworker-dynamic",
-    "@angular/platform-webworker",
     "@angular/common/testing",
     "@angular/common",
     "@angular/common/http/testing",
@@ -679,7 +677,7 @@ _NG_PACKAGE_ATTRS = dict(PKG_NPM_ATTRS, **{
         doc = """A .txt file passed to the `banner` config option of rollup.
         The contents of the file will be copied to the top of the resulting bundles.
         Note that you can replace a version placeholder in the license file, by using
-        the special version `11.0.0-next.3+76.sha-e2997ed`. See the section on stamping in the README.""",
+        the special version `11.0.0-next.3+80.sha-a6971ba`. See the section on stamping in the README.""",
         allow_single_file = [".txt"],
     ),
     "deps": attr.label_list(
