@@ -253,13 +253,13 @@ specification of this format at <a href="https://goo.gl/jB3GVv">https://goo.gl/j
         <p>A .txt file passed to the <code>banner</code> config option of rollup.
         The contents of the file will be copied to the top of the resulting bundles.
         Note that you can replace a version placeholder in the license file, by using
-        the special version <code>11.0.0-next.4+28.sha-f2341e2</code>. See the section on stamping in the README.</p>
+        the special version <code>11.0.0-next.4+29.sha-db56cf1</code>. See the section on stamping in the README.</p>
       </td>
     </tr>
     <tr id="ng_package.ng_packager">
       <td><code>ng_packager</code></td>
       <td>
-        <p><code><a href="https://bazel.build/docs/build-ref.html#labels">Label</a>; Optional; Default is @npm//@angular/bazel/bin:packager</code></p>
+        <p><code><a href="https://bazel.build/docs/build-ref.html#labels">Label</a>; Optional; Default is //@angular/bazel/bin:packager</code></p>
         
       </td>
     </tr>
@@ -273,14 +273,14 @@ specification of this format at <a href="https://goo.gl/jB3GVv">https://goo.gl/j
     <tr id="ng_package.rollup">
       <td><code>rollup</code></td>
       <td>
-        <p><code><a href="https://bazel.build/docs/build-ref.html#labels">Label</a>; Optional; Default is @npm_angular_bazel//src/ng_package:rollup_for_ng_package</code></p>
+        <p><code><a href="https://bazel.build/docs/build-ref.html#labels">Label</a>; Optional; Default is //@angular/bazel/src/ng_package:rollup_for_ng_package</code></p>
         
       </td>
     </tr>
     <tr id="ng_package.rollup_config_tmpl">
       <td><code>rollup_config_tmpl</code></td>
       <td>
-        <p><code><a href="https://bazel.build/docs/build-ref.html#labels">Label</a>; Optional; Default is @npm_angular_bazel//src/ng_package:rollup.config.js</code></p>
+        <p><code><a href="https://bazel.build/docs/build-ref.html#labels">Label</a>; Optional; Default is //:node_modules/@angular/bazel/src/ng_package/rollup.config.js</code></p>
         
       </td>
     </tr>
@@ -294,7 +294,7 @@ specification of this format at <a href="https://goo.gl/jB3GVv">https://goo.gl/j
     <tr id="ng_package.terser_config_file">
       <td><code>terser_config_file</code></td>
       <td>
-        <p><code><a href="https://bazel.build/docs/build-ref.html#labels">Label</a>; Optional; Default is @npm_angular_bazel//src/ng_package:terser_config.default.json</code></p>
+        <p><code><a href="https://bazel.build/docs/build-ref.html#labels">Label</a>; Optional; Default is //:node_modules/@angular/bazel/src/ng_package/terser_config.default.json</code></p>
         <p>A JSON file containing Terser minify() options.</p>
 <p>This is the file you would pass to the --config-file argument in terser's CLI.
 <a href="https://github.com/terser-js/terser#minify-options">https://github.com/terser-js/terser#minify-options</a> documents the content of the file.</p>
