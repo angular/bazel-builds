@@ -7,10 +7,10 @@
 Users should not load files under "/src"
 """
 
-load("//@angular/bazel/src/ng_package:ng_package.bzl", _ng_package = "ng_package")
-load("//@angular/bazel/src:ng_module.bzl", _ng_module = "ng_module_macro")
+load("//src/ng_package:ng_package.bzl", _ng_package = "ng_package")
+load("//src:ng_module.bzl", _ng_module = "ng_module_macro")
 
 ng_module = _ng_module
 ng_package = _ng_package
 # DO NOT ADD PUBLIC API without including in the documentation generation
-# Run `yarn bazel build //@angular/bazel/docs` to verify
+# Run `yarn bazel build //docs` to verify
