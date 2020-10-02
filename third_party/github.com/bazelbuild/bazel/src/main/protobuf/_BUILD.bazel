@@ -3,6 +3,9 @@ licenses(["notice"])
 
 package(default_visibility = ["//visibility:public"])
 
-
+filegroup(
+    name = "package_assets",
+    srcs = glob(["*"]),
+)
 
 exports_files(["worker_protocol.proto"])
