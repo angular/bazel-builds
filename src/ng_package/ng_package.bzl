@@ -20,19 +20,22 @@ load(
     "PKG_NPM_OUTPUTS",
     "create_package",
 )
-load("//src:external.bzl", "FLAT_DTS_FILE_SUFFIX")
-load("//src/ng_package:collect-type-definitions.bzl", "collect_type_definitions")
+load("//@angular/bazel/src:external.bzl", "FLAT_DTS_FILE_SUFFIX")
+load("//@angular/bazel/src/ng_package:collect-type-definitions.bzl", "collect_type_definitions")
 
 # Prints a debug message if "--define=VERBOSE_LOGS=true" is specified.
 def _debug(vars, *args):
     if "VERBOSE_LOGS" in vars.keys():
         print("[ng_package.bzl]", args)
 
-_DEFAULT_NG_PACKAGER = "@npm//@angular/bazel/bin:packager"
-_DEFAULT_ROLLUP_CONFIG_TMPL = "@npm_angular_bazel//src/ng_package:rollup.config.js"
-_DEFALUT_TERSER_CONFIG_FILE = "@npm_angular_bazel//src/ng_package:terser_config.default.json"
-_DEFAULT_ROLLUP = "@npm_angular_bazel//src/ng_package:rollup_for_ng_package"
-_DEFAULT_TERSER = "@npm//terser/bin:terser"
+_DEFAULT_NG_PACKAGER = "//@angular/bazel/bin:packager"
+_DEFAULT_ROLLUP_CONFIG_TMPL = "//:node_modules/@angular/bazel/src/ng_package/rollup.config.js"
+_DEFALUT_TERSER_CONFIG_FILE = "//:node_modules/@angular/bazel/src/ng_package/terser_config.default.json"
+_DEFAULT_ROLLUP = "//@angular/bazel/src/ng_package:rollup_for_ng_package"
+_DEFAULT_TERSER = (
+    
+    "//terser/bin:terser"
+)
 
 _NG_PACKAGE_MODULE_MAPPINGS_ATTR = "ng_package_module_mappings"
 
@@ -679,7 +682,7 @@ _NG_PACKAGE_ATTRS = dict(PKG_NPM_ATTRS, **{
         doc = """A .txt file passed to the `banner` config option of rollup.
         The contents of the file will be copied to the top of the resulting bundles.
         Note that you can replace a version placeholder in the license file, by using
-        the special version `10.1.5+5.sha-b417dd7`. See the section on stamping in the README.""",
+        the special version `10.1.5+6.sha-7628c36`. See the section on stamping in the README.""",
         allow_single_file = [".txt"],
     ),
     "deps": attr.label_list(
