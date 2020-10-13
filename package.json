@@ -1,6 +1,6 @@
 {
   "name": "@angular/bazel",
-  "version": "11.0.0-next.5+53.sha-b642f0b",
+  "version": "11.0.0-next.5+55.sha-584f37c",
   "description": "Angular - bazel build rules",
   "author": "angular",
   "license": "MIT",
@@ -25,7 +25,7 @@
     "tsickle": "^0.38.0"
   },
   "peerDependencies": {
-    "@angular/compiler-cli": "11.0.0-next.5+53.sha-b642f0b",
+    "@angular/compiler-cli": "11.0.0-next.5+55.sha-584f37c",
     "@bazel/typescript": ">=1.0.0",
     "terser": "^4.3.1",
     "typescript": ">=3.9 <4.1",
