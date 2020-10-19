@@ -1,6 +1,6 @@
 {
   "name": "@angular/bazel",
-  "version": "11.0.0-next.6+39.sha-d3087be",
+  "version": "11.0.0-next.6+42.sha-736e064",
   "description": "Angular - bazel build rules",
   "author": "angular",
   "license": "MIT",
@@ -25,10 +25,10 @@
     "tsickle": "^0.38.0"
   },
   "peerDependencies": {
-    "@angular/compiler-cli": "11.0.0-next.6+39.sha-d3087be",
+    "@angular/compiler-cli": "11.0.0-next.6+42.sha-736e064",
     "@bazel/typescript": ">=1.0.0",
     "terser": "^4.3.1",
-    "typescript": ">=3.9 <4.1",
+    "typescript": ">=4.0 <4.1",
     "rollup": ">=1.20.0",
     "rollup-plugin-commonjs": ">=9.0.0",
     "rollup-plugin-node-resolve": ">=4.2.0",
