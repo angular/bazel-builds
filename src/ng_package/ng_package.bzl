@@ -13,7 +13,7 @@ It packages your library following the Angular Package Format, see the
 specification of this format at https://goo.gl/jB3GVv
 """
 
-load("@build_bazel_rules_nodejs//:providers.bzl", "JSEcmaScriptModuleInfo", "JSNamedModuleInfo", "NpmPackageInfo", "node_modules_aspect")
+load("@build_bazel_rules_nodejs//:providers.bzl", "JSEcmaScriptModuleInfo", "JSNamedModuleInfo", "NodeContextInfo", "NpmPackageInfo", "node_modules_aspect")
 load(
     "@build_bazel_rules_nodejs//internal/pkg_npm:pkg_npm.bzl",
     "PKG_NPM_ATTRS",
@@ -228,6 +228,9 @@ def _write_rollup_config(
     if not include_tslib:
         external.append("tslib")
 
+    # Whether the --stamp flag is applied in the context of the action's execution.
+    stamp = ctx.attr.node_context_data[NodeContextInfo].stamp
+
     # Pass external & globals through a templated config file because on Windows there is
     # an argument limit and we there might be a lot of globals which need to be passed to
     # rollup.
@@ -240,7 +243,7 @@ def _write_rollup_config(
             "TMPL_module_mappings": str(mappings),
             "TMPL_node_modules_root": _compute_node_modules_root(ctx),
             "TMPL_root_dir": root_dir,
-            "TMPL_stamp_data": "\"%s\"" % ctx.version_file.path if ctx.version_file else "undefined",
+            "TMPL_stamp_data": "\"%s\"" % ctx.version_file.path if (stamp and ctx.version_file) else "undefined",
             "TMPL_workspace_name": ctx.workspace_name,
             "TMPL_external": ", ".join(["'%s'" % e for e in external]),
             "TMPL_globals": ", ".join(["'%s': '%s'" % g for g in globals.items()]),
@@ -287,10 +290,13 @@ def _run_rollup(ctx, bundle_name, rollup_config, entry_point, inputs, js_output,
     # bazel rule prints nothing on success.
     args.add("--silent")
 
+    # Whether the --stamp flag is applied in the context of the action's execution.
+    stamp = ctx.attr.node_context_data[NodeContextInfo].stamp
+
     other_inputs = [rollup_config]
     if ctx.file.license_banner:
         other_inputs.append(ctx.file.license_banner)
-    if ctx.version_file:
+    if stamp and ctx.version_file:
         other_inputs.append(ctx.version_file)
     ctx.actions.run(
         progress_message = "ng_package: Rollup %s %s" % (bundle_name, ctx.label),
@@ -680,7 +686,7 @@ _NG_PACKAGE_ATTRS = dict(PKG_NPM_ATTRS, **{
         doc = """A .txt file passed to the `banner` config option of rollup.
         The contents of the file will be copied to the top of the resulting bundles.
         Note that you can replace a version placeholder in the license file, by using
-        the special version `11.0.0-rc.0+1.sha-7f79e77`. See the section on stamping in the README.""",
+        the special version `11.0.0-rc.0+29.sha-6669571`. See the section on stamping in the README.""",
         allow_single_file = [".txt"],
     ),
     "deps": attr.label_list(
