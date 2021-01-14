@@ -329,7 +329,7 @@ def _filter_out_generated_files(files, extension, package_path = None):
     files_list = files.to_list() if type(files) == _DEPSET_TYPE else files
     for file in files_list:
         # If the "package_path" parameter has been specified, filter out files
-        # that do not start with the the specified package path.
+        # that do not start with the specified package path.
         if package_path and not file.short_path.startswith(package_path):
             continue
 
@@ -686,7 +686,7 @@ _NG_PACKAGE_ATTRS = dict(PKG_NPM_ATTRS, **{
         doc = """A .txt file passed to the `banner` config option of rollup.
         The contents of the file will be copied to the top of the resulting bundles.
         Note that you can replace a version placeholder in the license file, by using
-        the special version `11.1.0-next.4+101.sha-9b0b2dd`. See the section on stamping in the README.""",
+        the special version `11.1.0-next.4+104.sha-cf02cf1`. See the section on stamping in the README.""",
         allow_single_file = [".txt"],
     ),
     "deps": attr.label_list(
