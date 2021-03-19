@@ -13,26 +13,29 @@ It packages your library following the Angular Package Format, see the
 specification of this format at https://goo.gl/jB3GVv
 """
 
-load("@build_bazel_rules_nodejs//:providers.bzl", "JSEcmaScriptModuleInfo", "JSNamedModuleInfo", "NpmPackageInfo", "node_modules_aspect")
+load("@build_bazel_rules_nodejs//:providers.bzl", "JSEcmaScriptModuleInfo", "JSNamedModuleInfo", "NodeContextInfo", "NpmPackageInfo", "node_modules_aspect")
 load(
     "@build_bazel_rules_nodejs//internal/pkg_npm:pkg_npm.bzl",
     "PKG_NPM_ATTRS",
     "PKG_NPM_OUTPUTS",
     "create_package",
 )
-load("//src:external.bzl", "FLAT_DTS_FILE_SUFFIX")
-load("//src/ng_package:collect-type-definitions.bzl", "collect_type_definitions")
+load("//@angular/bazel/src:external.bzl", "FLAT_DTS_FILE_SUFFIX")
+load("//@angular/bazel/src/ng_package:collect-type-definitions.bzl", "collect_type_definitions")
 
 # Prints a debug message if "--define=VERBOSE_LOGS=true" is specified.
 def _debug(vars, *args):
     if "VERBOSE_LOGS" in vars.keys():
         print("[ng_package.bzl]", args)
 
-_DEFAULT_NG_PACKAGER = "@npm//@angular/bazel/bin:packager"
-_DEFAULT_ROLLUP_CONFIG_TMPL = "@npm_angular_bazel//src/ng_package:rollup.config.js"
-_DEFALUT_TERSER_CONFIG_FILE = "@npm_angular_bazel//src/ng_package:terser_config.default.json"
-_DEFAULT_ROLLUP = "@npm_angular_bazel//src/ng_package:rollup_for_ng_package"
-_DEFAULT_TERSER = "@npm//terser/bin:terser"
+_DEFAULT_NG_PACKAGER = "//@angular/bazel/bin:packager"
+_DEFAULT_ROLLUP_CONFIG_TMPL = "//:node_modules/@angular/bazel/src/ng_package/rollup.config.js"
+_DEFALUT_TERSER_CONFIG_FILE = "//:node_modules/@angular/bazel/src/ng_package/terser_config.default.json"
+_DEFAULT_ROLLUP = "//@angular/bazel/src/ng_package:rollup_for_ng_package"
+_DEFAULT_TERSER = (
+    
+    "//terser/bin:terser"
+)
 
 _NG_PACKAGE_MODULE_MAPPINGS_ATTR = "ng_package_module_mappings"
 
@@ -100,10 +103,9 @@ WELL_KNOWN_GLOBALS = {p: _global_name(p) for p in [
     "@angular/forms",
     "@angular/core/testing",
     "@angular/core",
+    "@angular/platform-server/init",
     "@angular/platform-server/testing",
     "@angular/platform-server",
-    "@angular/platform-webworker-dynamic",
-    "@angular/platform-webworker",
     "@angular/common/testing",
     "@angular/common",
     "@angular/common/http/testing",
@@ -227,6 +229,9 @@ def _write_rollup_config(
     if not include_tslib:
         external.append("tslib")
 
+    # Whether the --stamp flag is applied in the context of the action's execution.
+    stamp = ctx.attr.node_context_data[NodeContextInfo].stamp
+
     # Pass external & globals through a templated config file because on Windows there is
     # an argument limit and we there might be a lot of globals which need to be passed to
     # rollup.
@@ -239,7 +244,7 @@ def _write_rollup_config(
             "TMPL_module_mappings": str(mappings),
             "TMPL_node_modules_root": _compute_node_modules_root(ctx),
             "TMPL_root_dir": root_dir,
-            "TMPL_stamp_data": "\"%s\"" % ctx.version_file.path if ctx.version_file else "undefined",
+            "TMPL_stamp_data": "\"%s\"" % ctx.version_file.path if (stamp and ctx.version_file) else "undefined",
             "TMPL_workspace_name": ctx.workspace_name,
             "TMPL_external": ", ".join(["'%s'" % e for e in external]),
             "TMPL_globals": ", ".join(["'%s': '%s'" % g for g in globals.items()]),
@@ -286,10 +291,13 @@ def _run_rollup(ctx, bundle_name, rollup_config, entry_point, inputs, js_output,
     # bazel rule prints nothing on success.
     args.add("--silent")
 
+    # Whether the --stamp flag is applied in the context of the action's execution.
+    stamp = ctx.attr.node_context_data[NodeContextInfo].stamp
+
     other_inputs = [rollup_config]
     if ctx.file.license_banner:
         other_inputs.append(ctx.file.license_banner)
-    if ctx.version_file:
+    if stamp and ctx.version_file:
         other_inputs.append(ctx.version_file)
     ctx.actions.run(
         progress_message = "ng_package: Rollup %s %s" % (bundle_name, ctx.label),
@@ -322,7 +330,7 @@ def _filter_out_generated_files(files, extension, package_path = None):
     files_list = files.to_list() if type(files) == _DEPSET_TYPE else files
     for file in files_list:
         # If the "package_path" parameter has been specified, filter out files
-        # that do not start with the the specified package path.
+        # that do not start with the specified package path.
         if package_path and not file.short_path.startswith(package_path):
             continue
 
@@ -679,7 +687,7 @@ _NG_PACKAGE_ATTRS = dict(PKG_NPM_ATTRS, **{
         doc = """A .txt file passed to the `banner` config option of rollup.
         The contents of the file will be copied to the top of the resulting bundles.
         Note that you can replace a version placeholder in the license file, by using
-        the special version `10.1.0-next.4+26.sha-6248d6c`. See the section on stamping in the README.""",
+        the special version `12.0.0-next.5+9.sha-bff0d8f`. See the section on stamping in the README.""",
         allow_single_file = [".txt"],
     ),
     "deps": attr.label_list(
@@ -802,3 +810,23 @@ ng_package = rule(
 """
 ng_package produces an npm-ready package from an Angular library.
 """
+
+def ng_package_macro(name, **kwargs):
+    ng_package(
+        name = name,
+        **kwargs
+    )
+    native.alias(
+        name = name + ".pack",
+        actual = select({
+            "@bazel_tools//src/conditions:host_windows": name + ".pack.bat",
+            "//conditions:default": name + ".pack.sh",
+        }),
+    )
+    native.alias(
+        name = name + ".publish",
+        actual = select({
+            "@bazel_tools//src/conditions:host_windows": name + ".publish.bat",
+            "//conditions:default": name + ".publish.sh",
+        }),
+    )
