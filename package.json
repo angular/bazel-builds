@@ -1,9 +1,12 @@
 {
   "name": "@angular/bazel",
-  "version": "9.0.0-next.12+69.sha-1f498ab.with-local-changes",
+  "version": "12.0.0-next.8+121.sha-72c4288",
   "description": "Angular - bazel build rules",
   "author": "angular",
   "license": "MIT",
+  "engines": {
+    "node": ">=12.14.1 <16.0.0"
+  },
   "bin": {
     "api-extractor": "./src/api-extractor/index.js",
     "ngc-wrapped": "./src/ngc-wrapped/index.js",
@@ -15,35 +18,36 @@
   "bazelBin": {
     "ngc-wrapped": {
       "additionalAttributes": {
-        "configuration_env_vars": "[\"compile\"]"
+        "configuration_env_vars": "[\"angular_ivy_enabled\"]"
       }
     }
   },
-  "bazelWorkspaces": {
-    "npm_angular_bazel": {
-      "version": "9.0.0-next.12+69.sha-1f498ab.with-local-changes",
-      "rootPath": "."
-    }
-  },
   "dependencies": {
-    "@microsoft/api-extractor": "^7.3.9",
+    "@microsoft/api-extractor": "7.7.11",
     "shelljs": "0.8.2",
-    "tsickle": "^0.37.0"
+    "tsickle": "^0.38.0",
+    "tslib": "^2.1.0"
   },
   "peerDependencies": {
-    "@angular/compiler-cli": "9.0.0-next.12+69.sha-1f498ab.with-local-changes",
-    "@bazel/typescript": "0.*",
-    "typescript": ">=3.6 <3.7"
+    "@angular/compiler-cli": "12.0.0-next.8+121.sha-72c4288",
+    "@bazel/typescript": ">=1.0.0",
+    "terser": "^4.3.1",
+    "typescript": ">=4.2.3 <4.3",
+    "rollup": ">=1.20.0",
+    "rollup-plugin-commonjs": ">=9.0.0",
+    "rollup-plugin-node-resolve": ">=4.2.0",
+    "rollup-plugin-sourcemaps": ">=0.4.0"
   },
-  "devDependencies": {
-
+  "peerDependenciesMeta": {
+    "terser": {
+      "optional": true
+    }
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/angular/angular.git"
+    "url": "https://github.com/angular/angular.git",
+    "directory": "packages/bazel"
   },
-  "builders": "./src/builders/builders.json",
-  "schematics": "./src/schematics/collection.json",
   "ng-update": {
     "packageGroup": [
       "@angular/core",
@@ -57,12 +61,14 @@
       "@angular/platform-browser-dynamic",
       "@angular/forms",
       "@angular/platform-server",
-      "@angular/platform-webworker",
-      "@angular/platform-webworker-dynamic",
       "@angular/upgrade",
       "@angular/router",
       "@angular/language-service",
+      "@angular/localize",
       "@angular/service-worker"
     ]
+  },
+  "publishConfig": {
+    "registry": "https://wombat-dressing-room.appspot.com"
   }
 }
