@@ -1,6 +1,8 @@
-package(default_visibility = ["//visibility:public"])
-
 load("@build_bazel_rules_nodejs//:index.bzl", "nodejs_binary")
+
+
+
+package(default_visibility = ["//visibility:public"])
 
 nodejs_binary(
     name = "rollup_for_ng_package",
@@ -20,12 +22,14 @@ nodejs_binary(
         
         "//:node_modules/rollup/dist/bin/rollup"
     ),
+    # TODO(josephperrott): update dependency usages to no longer need bazel patch module resolver
+    # See: https://github.com/bazelbuild/rules_nodejs/wiki#--bazel_patch_module_resolver-now-defaults-to-false-2324
+    templated_args = ["--bazel_patch_module_resolver"],
 )
 
 exports_files([
     "ng_package.bzl",
     "rollup.config.js",
-    "terser_config.default.json",
 ])
 
 

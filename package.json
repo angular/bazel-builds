@@ -1,9 +1,12 @@
 {
   "name": "@angular/bazel",
-  "version": "11.1.0-next.4+175.sha-02ff4ed",
+  "version": "12.0.0-next.8+133.sha-d5b13ce",
   "description": "Angular - bazel build rules",
   "author": "angular",
   "license": "MIT",
+  "engines": {
+    "node": ">=12.14.1 <16.0.0"
+  },
   "bin": {
     "api-extractor": "./src/api-extractor/index.js",
     "ngc-wrapped": "./src/ngc-wrapped/index.js",
@@ -20,15 +23,16 @@
     }
   },
   "dependencies": {
-    "@microsoft/api-extractor": "^7.7.13",
+    "@microsoft/api-extractor": "7.7.11",
     "shelljs": "0.8.2",
-    "tsickle": "^0.38.0"
+    "tsickle": "^0.38.0",
+    "tslib": "^2.1.0"
   },
   "peerDependencies": {
-    "@angular/compiler-cli": "11.1.0-next.4+175.sha-02ff4ed",
+    "@angular/compiler-cli": "12.0.0-next.8+133.sha-d5b13ce",
     "@bazel/typescript": ">=1.0.0",
     "terser": "^4.3.1",
-    "typescript": ">=4.0 <4.2",
+    "typescript": ">=4.2.3 <4.3",
     "rollup": ">=1.20.0",
     "rollup-plugin-commonjs": ">=9.0.0",
     "rollup-plugin-node-resolve": ">=4.2.0",
