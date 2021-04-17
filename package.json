@@ -1,6 +1,6 @@
 {
   "name": "@angular/bazel",
-  "version": "9.0.0-rc.1+246.sha-d3cfad7.with-local-changes",
+  "version": "12.0.0-next.8+77.sha-917664e",
   "description": "Angular - bazel build rules",
   "author": "angular",
   "license": "MIT",
@@ -15,26 +15,21 @@
   "bazelBin": {
     "ngc-wrapped": {
       "additionalAttributes": {
-        "configuration_env_vars": "[\"compile\"]"
+        "configuration_env_vars": "[\"angular_ivy_enabled\"]"
       }
     }
   },
-  "bazelWorkspaces": {
-    "npm_angular_bazel": {
-      "version": "9.0.0-rc.1+246.sha-d3cfad7.with-local-changes",
-      "rootPath": "."
-    }
-  },
   "dependencies": {
-    "@microsoft/api-extractor": "^7.3.9",
+    "@microsoft/api-extractor": "7.7.11",
     "shelljs": "0.8.2",
-    "tsickle": "^0.37.1"
+    "tsickle": "^0.38.0",
+    "tslib": "^2.1.0"
   },
   "peerDependencies": {
-    "@angular/compiler-cli": "9.0.0-rc.1+246.sha-d3cfad7.with-local-changes",
-    "@bazel/typescript": "0.*",
+    "@angular/compiler-cli": "12.0.0-next.8+77.sha-917664e",
+    "@bazel/typescript": ">=1.0.0",
     "terser": "^4.3.1",
-    "typescript": ">=3.6 <3.7",
+    "typescript": ">=4.2.3 <4.3",
     "rollup": ">=1.20.0",
     "rollup-plugin-commonjs": ">=9.0.0",
     "rollup-plugin-node-resolve": ">=4.2.0",
@@ -47,10 +42,9 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/angular/angular.git"
+    "url": "https://github.com/angular/angular.git",
+    "directory": "packages/bazel"
   },
-  "builders": "./src/builders/builders.json",
-  "schematics": "./src/schematics/collection.json",
   "ng-update": {
     "packageGroup": [
       "@angular/core",
@@ -64,8 +58,6 @@
       "@angular/platform-browser-dynamic",
       "@angular/forms",
       "@angular/platform-server",
-      "@angular/platform-webworker",
-      "@angular/platform-webworker-dynamic",
       "@angular/upgrade",
       "@angular/router",
       "@angular/language-service",
@@ -73,7 +65,7 @@
       "@angular/service-worker"
     ]
   },
-  "publishConfig":{
-    "registry":"https://wombat-dressing-room.appspot.com"
+  "publishConfig": {
+    "registry": "https://wombat-dressing-room.appspot.com"
   }
 }
