@@ -1,11 +1,11 @@
 {
   "name": "@angular/bazel",
-  "version": "12.0.0-next.8+233.sha-e47ea29",
+  "version": "12.0.0-next.8+251.sha-af12d8d",
   "description": "Angular - bazel build rules",
   "author": "angular",
   "license": "MIT",
   "engines": {
-    "node": ">=12.14.1 <16.0.0"
+    "node": "^12.14.1 || ^14.0.0"
   },
   "bin": {
     "api-extractor": "./src/api-extractor/index.js",
@@ -29,7 +29,7 @@
     "tslib": "^2.1.0"
   },
   "peerDependencies": {
-    "@angular/compiler-cli": "12.0.0-next.8+233.sha-e47ea29",
+    "@angular/compiler-cli": "12.0.0-next.8+251.sha-af12d8d",
     "@bazel/typescript": ">=1.0.0",
     "terser": "^4.3.1",
     "typescript": ">=4.2.3 <4.3",
