@@ -125,10 +125,6 @@ WELL_KNOWN_GLOBALS = {p: _global_name(p) for p in [
     "rxjs/operators",
 ]}
 
-# skydoc fails with type(depset()) so using "depset" here instead
-# TODO(gregmagolan): clean this up
-_DEPSET_TYPE = "depset"
-
 def _compute_node_modules_root(ctx):
     """Computes the node_modules root from the node_modules and deps attributes.
 
@@ -282,7 +278,11 @@ def _flatten_paths(directory):
 # Optionally can filter out files that do not belong to a specified package path.
 def _filter_out_generated_files(files, extension, package_path = None):
     result = []
-    files_list = files.to_list() if type(files) == _DEPSET_TYPE else files
+
+    # If `files` is a depset, convert it to a list. Note that we do not compare the type
+    # of files against a literal as per best practices within Bazel Starlark.
+    # https://docs.bazel.build/versions/main/skylark/lib/globals.html#type.
+    files_list = files.to_list() if type(files) == type(depset()) else files
     for file in files_list:
         # If the "package_path" parameter has been specified, filter out files
         # that do not start with the specified package path.
@@ -298,7 +298,7 @@ def _filter_out_generated_files(files, extension, package_path = None):
     return depset(result)
 
 def _filter_js_inputs(all_inputs):
-    all_inputs_list = all_inputs.to_list() if type(all_inputs) == _DEPSET_TYPE else all_inputs
+    all_inputs_list = all_inputs.to_list() if type(all_inputs) == type(depset()) else all_inputs
     return [
         f
         for f in all_inputs_list
@@ -633,7 +633,7 @@ _NG_PACKAGE_ATTRS = dict(PKG_NPM_ATTRS, **{
         doc = """A .txt file passed to the `banner` config option of rollup.
         The contents of the file will be copied to the top of the resulting bundles.
         Note that you can replace a version placeholder in the license file, by using
-        the special version `12.2.0-next.1+53.sha-9d58ebf`. See the section on stamping in the README.""",
+        the special version `12.2.0-next.1+58.sha-762e057`. See the section on stamping in the README.""",
         allow_single_file = [".txt"],
     ),
     "deps": attr.label_list(
