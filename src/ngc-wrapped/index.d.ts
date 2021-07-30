@@ -31,12 +31,3 @@ export declare function compile({ allDepsCompiledWithBazel, useManifestPathsAsMo
     diagnostics: ng.Diagnostics;
     program: ng.Program;
 };
-/**
- * Adds support for the optional `fileNameToModuleName` operation to a given `ng.CompilerHost`.
- *
- * This is used within `ngc-wrapped` and the Bazel compilation flow, but is exported here to allow
- * for other consumers of the compiler to access this same logic. For example, the xi18n operation
- * in g3 configures its own `ng.CompilerHost` which also requires `fileNameToModuleName` to work
- * correctly.
- */
-export declare function patchNgHostWithFileNameToModuleName(ngHost: ng.CompilerHost, compilerOpts: ng.CompilerOptions, bazelOpts: BazelOptions, useManifestPathsAsModuleName: boolean): void;
