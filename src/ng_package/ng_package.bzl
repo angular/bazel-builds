@@ -633,7 +633,7 @@ _NG_PACKAGE_ATTRS = dict(PKG_NPM_ATTRS, **{
         doc = """A .txt file passed to the `banner` config option of rollup.
         The contents of the file will be copied to the top of the resulting bundles.
         Note that you can replace a version placeholder in the license file, by using
-        the special version `13.0.0-next.6+54.sha-6ce6beb.with-local-changes`. See the section on stamping in the README.""",
+        the special version `13.0.0-next.6+56.sha-77bd253.with-local-changes`. See the section on stamping in the README.""",
         allow_single_file = [".txt"],
     ),
     "deps": attr.label_list(
