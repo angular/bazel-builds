@@ -1,6 +1,6 @@
 {
   "name": "@angular/bazel",
-  "version": "13.0.0-next.9+10.sha-9eba260.with-local-changes",
+  "version": "13.0.0-next.9+84.sha-c15b8c7.with-local-changes",
   "description": "Angular - bazel build rules",
   "author": "angular",
   "license": "MIT",
@@ -11,8 +11,7 @@
     "api-extractor": "./src/api-extractor/index.js",
     "ngc-wrapped": "./src/ngc-wrapped/index.js",
     "packager": "./src/ng_package/packager.js",
-    "xi18n": "./src/ngc-wrapped/extract_i18n.js",
-    "modify_tsconfig": "./src/modify_tsconfig.js"
+    "xi18n": "./src/ngc-wrapped/extract_i18n.js"
   },
   "typings": "./src/ngc-wrapped/index.d.ts",
   "bazelBin": {
@@ -29,14 +28,14 @@
     "tslib": "^2.3.0"
   },
   "peerDependencies": {
-    "@angular/compiler-cli": "13.0.0-next.9+10.sha-9eba260.with-local-changes",
+    "@angular/compiler-cli": "13.0.0-next.9+84.sha-c15b8c7.with-local-changes",
     "@bazel/typescript": ">=1.0.0",
-    "terser": "^4.3.1",
-    "typescript": ">=4.2.3 <4.5",
-    "rollup": ">=1.20.0",
-    "rollup-plugin-commonjs": ">=9.0.0",
-    "rollup-plugin-node-resolve": ">=4.2.0",
-    "rollup-plugin-sourcemaps": ">=0.4.0"
+    "@rollup/plugin-commonjs": "^20.0.0",
+    "@rollup/plugin-node-resolve": "^13.0.4",
+    "rollup": "^2.56.3",
+    "rollup-plugin-sourcemaps": "^0.6.3",
+    "terser": "^5.9.0",
+    "typescript": ">=4.2.3 <4.5"
   },
   "peerDependenciesMeta": {
     "terser": {

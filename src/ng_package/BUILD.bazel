@@ -10,9 +10,9 @@ nodejs_binary(
         
         "//rollup",
         
-        "//rollup-plugin-commonjs",
+        "//@rollup/plugin-commonjs",
         
-        "//rollup-plugin-node-resolve",
+        "//@rollup/plugin-node-resolve",
         
         "//rollup-plugin-sourcemaps",
         

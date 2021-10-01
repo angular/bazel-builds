@@ -5,8 +5,9 @@
 """Run Angular's AOT template compiler
 """
 
+load("//@angular/bazel/src/ng_module:partial_compilation.bzl", "NgPartialCompilationInfo")
 load(
-    ":external.bzl",
+    "//@angular/bazel/src:external.bzl",
     "BuildSettingInfo",
     "COMMON_ATTRIBUTES",
     "COMMON_OUTPUTS",
@@ -31,13 +32,16 @@ load(
 NgPerfInfo = provider(fields = ["enable_perf_logging"])
 
 _FLAT_DTS_FILE_SUFFIX = ".bundle.d.ts"
-_R3_SYMBOLS_DTS_FILE = "src/r3_symbols.d.ts"
 
 def is_perf_requested(ctx):
     enable_perf_logging = ctx.attr.perf_flag != None and ctx.attr.perf_flag[NgPerfInfo].enable_perf_logging == True
     if enable_perf_logging and not is_ivy_enabled(ctx):
         fail("Angular View Engine does not support performance tracing")
     return enable_perf_logging
+
+def _is_partial_compilation_enabled(ctx):
+    """Whether partial compilation is enabled for this target."""
+    return ctx.attr._partial_compilation_flag[NgPartialCompilationInfo].enabled
 
 def is_ivy_enabled(ctx):
     """Determine if the ivy compiler should be used to by the ng_module.
@@ -48,6 +52,10 @@ def is_ivy_enabled(ctx):
     Returns:
       Boolean, Whether the ivy compiler should be used.
     """
+
+    # If partial compilation is enabled through a build setting, always enable Ivy.
+    if _is_partial_compilation_enabled(ctx):
+        return True
 
     # Check the renderer flag to see if Ivy is enabled.
     # This is intended to support a transition use case for google3 migration.
@@ -83,8 +91,11 @@ def _compiler_name(ctx):
     Returns:
       The name of the current compiler to be displayed in build output
     """
-
     return "Ivy" if is_ivy_enabled(ctx) else "ViewEngine"
+
+def _get_ivy_compilation_mode(ctx):
+    """Gets the Ivy compilation mode based on the current build settings."""
+    return "partial" if _is_partial_compilation_enabled(ctx) else "full"
 
 def _is_view_engine_enabled(ctx):
     """Determines whether Angular outputs will be produced by the current compilation strategy.
@@ -142,25 +153,6 @@ def _should_produce_dts_bundle(ctx):
     """
     return getattr(ctx.attr, "bundle_dts", False)
 
-def _should_produce_r3_symbols_bundle(ctx):
-    """Should we produce r3_symbols bundle.
-
-    NGCC relies on having r3_symbols file. This file is located in @angular/core
-    And should only be included when bundling core in legacy mode.
-
-    Args:
-      ctx: skylark rule execution context
-
-    Returns:
-      true when we should produce r3_symbols dts.
-    """
-
-    # iif we are compiling @angular/core with ngc we should add this addition dts bundle
-    # because ngcc relies on having this file.
-    # see: https://github.com/angular/angular/blob/84406e4d6d93b28b23efbb1701bc5ae1084da67b/packages/compiler-cli/src/ngcc/src/packages/entry_point_bundle.ts#L56
-    # todo: alan-agius4: remove when ngcc doesn't need this anymore
-    return _is_view_engine_enabled(ctx) and ctx.attr.module_name == "@angular/core"
-
 def _should_produce_flat_module_outs(ctx):
     """Should we produce flat module outputs.
 
@@ -187,6 +179,7 @@ def _expected_outs(ctx):
     transpilation_infos = []
     summary_files = []
     metadata_files = []
+    flat_module_out_prodmode_file = None
 
     factory_basename_set = depset([_basename_of(ctx, src) for src in ctx.files.factories])
 
@@ -251,26 +244,30 @@ def _expected_outs(ctx):
         if not _is_bazel():
             metadata_files += [ctx.actions.declare_file(basename + ext) for ext in metadata]
 
-    dts_bundles = None
+    dts_bundle = None
     if _should_produce_dts_bundle(ctx):
         # We need to add a suffix to bundle as it might collide with the flat module dts.
         # The flat module dts out contains several other exports
         # https://github.com/angular/angular/blob/84406e4d6d93b28b23efbb1701bc5ae1084da67b/packages/compiler-cli/src/metadata/index_writer.ts#L18
         # the file name will be like 'core.bundle.d.ts'
-        dts_bundles = [ctx.actions.declare_file(ctx.label.name + _FLAT_DTS_FILE_SUFFIX)]
-
-        if _should_produce_r3_symbols_bundle(ctx):
-            dts_bundles.append(ctx.actions.declare_file(_R3_SYMBOLS_DTS_FILE.replace(".d.ts", _FLAT_DTS_FILE_SUFFIX)))
+        dts_bundle = ctx.actions.declare_file(ctx.label.name + _FLAT_DTS_FILE_SUFFIX)
 
     # We do this just when producing a flat module index for a publishable ng_module
     if _should_produce_flat_module_outs(ctx):
-        flat_module_out = _flat_module_out_file(ctx)
-        devmode_js_files.append(ctx.actions.declare_file("%s.js" % flat_module_out))
-        closure_js_files.append(ctx.actions.declare_file("%s.mjs" % flat_module_out))
-        bundle_index_typings = ctx.actions.declare_file("%s.d.ts" % flat_module_out)
+        flat_module_out_name = _flat_module_out_file(ctx)
+
+        # Note: We keep track of the prodmode flat module output for `ng_packager` which
+        # uses it as entry-point for producing FESM bundles.
+        # TODO: Remove flat module from `ng_module` and detect package entry-point reliably
+        # in Ivy. Related discussion: https://github.com/angular/angular/pull/36971#issuecomment-625282383.
+        flat_module_out_prodmode_file = ctx.actions.declare_file("%s.mjs" % flat_module_out_name)
+
+        closure_js_files.append(flat_module_out_prodmode_file)
+        devmode_js_files.append(ctx.actions.declare_file("%s.js" % flat_module_out_name))
+        bundle_index_typings = ctx.actions.declare_file("%s.d.ts" % flat_module_out_name)
         declaration_files.append(bundle_index_typings)
         if is_legacy_ngc:
-            metadata_files.append(ctx.actions.declare_file("%s.metadata.json" % flat_module_out))
+            metadata_files.append(ctx.actions.declare_file("%s.metadata.json" % flat_module_out_name))
     else:
         bundle_index_typings = None
 
@@ -300,28 +297,27 @@ def _expected_outs(ctx):
         transpilation_infos = transpilation_infos,
         summaries = summary_files,
         metadata = metadata_files,
-        dts_bundles = dts_bundles,
+        dts_bundle = dts_bundle,
         bundle_index_typings = bundle_index_typings,
         i18n_messages = i18n_messages_files,
         dev_perf_files = dev_perf_files,
         prod_perf_files = prod_perf_files,
+        flat_module_out_prodmode_file = flat_module_out_prodmode_file,
     )
 
 # Determines if we need to generate View Engine shims (.ngfactory and .ngsummary files)
 def _generate_ve_shims(ctx):
-    # we are checking the workspace name here, because otherwise this would be a breaking change
-    # (the shims used to be on by default)
-    # we can remove this check once angular/components and angular/angular-cli repos no longer depend
-    # on the presence of shims, or if they explicitly opt-in to their generation via ng_modules' generate_ve_shims attr
     return _is_bazel() and _is_view_engine_enabled(ctx) or (
-        getattr(ctx.attr, "generate_ve_shims", False) == True or ctx.workspace_name != "angular"
+        getattr(ctx.attr, "generate_ve_shims", False) == True
     )
 
 def _ngc_tsconfig(ctx, files, srcs, **kwargs):
     generate_ve_shims = _generate_ve_shims(ctx)
+    compilation_mode = _get_ivy_compilation_mode(ctx)
+    is_devmode = "devmode_manifest" in kwargs
     outs = _expected_outs(ctx)
     is_legacy_ngc = _is_view_engine_enabled(ctx)
-    if "devmode_manifest" in kwargs:
+    if is_devmode:
         expected_outs = outs.devmode_js + outs.declarations + outs.summaries + outs.metadata
     else:
         expected_outs = outs.closure_js
@@ -351,9 +347,9 @@ def _ngc_tsconfig(ctx, files, srcs, **kwargs):
         # Summaries are only enabled if Angular outputs are to be produced.
         "enableSummariesForJit": is_legacy_ngc,
         "enableIvy": is_ivy_enabled(ctx),
-        "compilationMode": ctx.attr.compilation_mode,
         "fullTemplateTypeCheck": ctx.attr.type_check,
         "_extendedTemplateDiagnostics": ctx.attr.experimental_extended_template_diagnostics,
+        "compilationMode": compilation_mode,
         # In Google3 we still want to use the symbol factory re-exports in order to
         # not break existing apps inside Google. Unlike Bazel, Google3 does not only
         # enforce strict dependencies of source files, but also for generated files
@@ -380,7 +376,7 @@ def _ngc_tsconfig(ctx, files, srcs, **kwargs):
     if is_perf_requested(ctx):
         # In Ivy mode, set the `tracePerformance` Angular compiler option to enable performance
         # metric output.
-        if "devmode_manifest" in kwargs:
+        if is_devmode:
             perf_path = outs.dev_perf_files[0].path
         else:
             perf_path = outs.prod_perf_files[0].path
@@ -393,9 +389,20 @@ def _ngc_tsconfig(ctx, files, srcs, **kwargs):
             [ctx.workspace_name] + ctx.label.package.split("/") + [ctx.label.name, ""],
         )
 
-    return dict(tsc_wrapped_tsconfig(ctx, files, srcs, **kwargs), **{
+    tsconfig = dict(tsc_wrapped_tsconfig(ctx, files, srcs, **kwargs), **{
         "angularCompilerOptions": angular_compiler_options,
     })
+
+    # For prodmode, the compilation target is set to `ES2020`. `@bazel/typecript`
+    # using the `create_tsconfig` function sets `ES2015` by default.
+    # https://github.com/bazelbuild/rules_nodejs/blob/901df3868e3ceda177d3ed181205e8456a5592ea/third_party/github.com/bazelbuild/rules_typescript/internal/common/tsconfig.bzl#L195
+    # TODO(devversion): In the future, combine prodmode and devmode so we can get rid of the
+    # ambiguous terminology and concept that can result in slow-down for development workflows.
+    if not is_devmode:
+        # Note: Keep in sync with the `prodmode_target` for `ts_library` in `tools/defaults.bzl`
+        tsconfig["compilerOptions"]["target"] = "es2020"
+
+    return tsconfig
 
 def _has_target_angular_summaries(target):
     return hasattr(target, "angular") and hasattr(target.angular, "summaries")
@@ -439,8 +446,8 @@ def ngc_compile_action(
         node_opts,
         locale = None,
         i18n_args = [],
-        dts_bundles_out = None,
-        compile_mode = "prodmode"):
+        dts_bundle_out = None,
+        target_flavor = "prodmode"):
     """Helper function to create the ngc action.
 
     This is exposed for google3 to wire up i18n replay rules, and is not intended
@@ -456,7 +463,8 @@ def ngc_compile_action(
       node_opts: list of strings, extra nodejs options.
       locale: i18n locale, or None
       i18n_args: additional command-line arguments to ngc
-      dts_bundles_out: produced flattened dts file
+      dts_bundle_out: produced flattened dts file
+      target_flavor: Whether prodmode or devmode output is being built.
 
     Returns:
       the parameters of the compilation which will be used to replay the ngc action for i18N.
@@ -464,14 +472,23 @@ def ngc_compile_action(
 
     is_legacy_ngc = _is_view_engine_enabled(ctx)
 
+    if is_legacy_ngc:
+        ngc_compilation_mode = target_flavor
+    else:
+        ngc_compilation_mode = "%s %s" % (_get_ivy_compilation_mode(ctx), target_flavor)
+
     mnemonic = "AngularTemplateCompile"
-    progress_message = "Compiling Angular templates (%s - %s) %s" % (_compiler_name(ctx), compile_mode, label)
+    progress_message = "Compiling Angular templates (%s - %s) %s" % (
+        _compiler_name(ctx),
+        ngc_compilation_mode,
+        label,
+    )
 
     if locale:
         mnemonic = "AngularI18NMerging"
         supports_workers = "0"
         progress_message = ("Recompiling Angular templates (ngc - %s) %s for locale %s" %
-                            (compile_mode, label, locale))
+                            (target_flavor, label, locale))
     else:
         supports_workers = str(int(ctx.attr._supports_workers))
 
@@ -518,28 +535,25 @@ def ngc_compile_action(
             mnemonic = "Angular2MessageExtractor",
         )
 
-    if dts_bundles_out != None:
+    if dts_bundle_out != None:
         # combine the inputs and outputs and filter .d.ts and json files
         filter_inputs = [f for f in inputs.to_list() + outputs if f.path.endswith(".d.ts") or f.path.endswith(".json")]
 
         if _should_produce_flat_module_outs(ctx):
-            dts_entry_points = ["%s.d.ts" % _flat_module_out_file(ctx)]
+            dts_entry_point = "%s.d.ts" % _flat_module_out_file(ctx)
         else:
-            dts_entry_points = [ctx.attr.entry_point.label.name.replace(".ts", ".d.ts")]
-
-        if _should_produce_r3_symbols_bundle(ctx):
-            dts_entry_points.append(_R3_SYMBOLS_DTS_FILE)
+            dts_entry_point = ctx.attr.entry_point.label.name.replace(".ts", ".d.ts")
 
         ctx.actions.run(
-            progress_message = "Bundling DTS (%s) %s" % (compile_mode, str(ctx.label)),
+            progress_message = "Bundling DTS (%s) %s" % (target_flavor, str(ctx.label)),
             mnemonic = "APIExtractor",
             executable = ctx.executable.api_extractor,
             inputs = filter_inputs,
-            outputs = dts_bundles_out,
+            outputs = [dts_bundle_out],
             arguments = [
                 tsconfig_file.path,
-                ",".join(["/".join([ctx.bin_dir.path, ctx.label.package, f]) for f in dts_entry_points]),
-                ",".join([f.path for f in dts_bundles_out]),
+                "/".join([ctx.bin_dir.path, ctx.label.package, dts_entry_point]),
+                dts_bundle_out.path,
             ],
         )
 
@@ -567,12 +581,12 @@ def _compile_action(
         ctx,
         inputs,
         outputs,
-        dts_bundles_out,
+        dts_bundle_out,
         messages_out,
         perf_out,
         tsconfig_file,
         node_opts,
-        compile_mode):
+        target_flavor):
     # Give the Angular compiler all the user-listed assets
     file_inputs = list(ctx.files.assets)
 
@@ -610,7 +624,7 @@ def _compile_action(
         ],
     )
 
-    return ngc_compile_action(ctx, ctx.label, action_inputs, outputs, messages_out, tsconfig_file, node_opts, None, [], dts_bundles_out, compile_mode)
+    return ngc_compile_action(ctx, ctx.label, action_inputs, outputs, messages_out, tsconfig_file, node_opts, None, [], dts_bundle_out, target_flavor)
 
 def _prodmode_compile_action(ctx, inputs, outputs, tsconfig_file, node_opts):
     outs = _expected_outs(ctx)
@@ -619,7 +633,7 @@ def _prodmode_compile_action(ctx, inputs, outputs, tsconfig_file, node_opts):
 def _devmode_compile_action(ctx, inputs, outputs, tsconfig_file, node_opts):
     outs = _expected_outs(ctx)
     compile_action_outputs = outputs + outs.devmode_js + outs.declarations + outs.summaries + outs.metadata + outs.dev_perf_files
-    _compile_action(ctx, inputs, compile_action_outputs, outs.dts_bundles, None, outs.dev_perf_files, tsconfig_file, node_opts, "devmode")
+    _compile_action(ctx, inputs, compile_action_outputs, outs.dts_bundle, None, outs.dev_perf_files, tsconfig_file, node_opts, "devmode")
 
 def _ts_expected_outs(ctx, label, srcs_files = []):
     # rules_typescript expects a function with two or more arguments, but our
@@ -673,11 +687,11 @@ def ng_module_impl(ctx, ts_compile_actions):
             # Metadata files are only generated in the legacy ngc compiler.
             metadata_file = outs.metadata[0] if is_legacy_ngc else None,
             typings_file = outs.bundle_index_typings,
-            flat_module_out_file = _flat_module_out_file(ctx),
+            flat_module_out_prodmode_file = outs.flat_module_out_prodmode_file,
         )
 
-    if outs.dts_bundles != None:
-        providers["dts_bundles"] = outs.dts_bundles
+    if outs.dts_bundle != None:
+        providers["dts_bundle"] = outs.dts_bundle
 
     return providers
 
@@ -742,14 +756,6 @@ NG_MODULE_ATTRIBUTES = {
         doc = "Experimental option, not publicly supported.",
     ),
     "inline_resources": attr.bool(default = True),
-    "compilation_mode": attr.string(
-        doc = """Set the compilation mode for the Angular compiler.
-
-        This attribute is a noop if Ivy is not enabled.
-        """,
-        values = ["partial", "full", ""],
-        default = "",
-    ),
     "no_i18n": attr.bool(default = False),
     "compiler": attr.label(
         doc = """Sets a different ngc compiler binary to use for this library.
@@ -766,6 +772,11 @@ NG_MODULE_ATTRIBUTES = {
         default = Label(DEFAULT_NG_XI18N),
         executable = True,
         cfg = "host",
+    ),
+    "_partial_compilation_flag": attr.label(
+        default = "@npm//@angular/bazel/src:partial_compilation",
+        providers = [NgPartialCompilationInfo],
+        doc = "Internal attribute which points to the partial compilation build setting.",
     ),
     # In the angular/angular monorepo, //tools:defaults.bzl wraps the ng_module rule in a macro
     # which sets this attribute to the //packages/compiler-cli:ng_perf flag.

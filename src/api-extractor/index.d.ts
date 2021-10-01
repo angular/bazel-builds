@@ -7,4 +7,4 @@
  */
 /// <amd-module name="angular/packages/bazel/src/api-extractor/index" />
 /// <reference lib="es2017" />
-export declare function runMain(tsConfig: string, entryPoint: string, dtsBundleOut?: string, apiReviewFolder?: string, acceptApiUpdates?: boolean): 1 | 0;
+export declare function runMain(tsConfig: string, entryPointExecPath: string, dtsBundleOut: string, apiReviewFolder?: string, acceptApiUpdates?: boolean): 1 | 0;
