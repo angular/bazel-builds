@@ -6,7 +6,7 @@
  * found in the LICENSE file at https://angular.io/license
  */
 /// <amd-module name="@angular/bazel" />
-import type { CompilerHost as NgCompilerHost, Program, Diagnostics, CompilerOptions } from '@angular/compiler-cli';
+import type { CompilerHost as NgCompilerHost, Program, CompilerOptions } from '@angular/compiler-cli';
 import { BazelOptions, CompilerHost } from '@bazel/typescript';
 import ts from 'typescript';
 declare type CompilerCliModule = typeof import('@angular/compiler-cli') & typeof import('@angular/compiler-cli/private/bazel');
@@ -26,11 +26,11 @@ export declare function compile({ allDepsCompiledWithBazel, useManifestPathsAsMo
     bazelOpts: BazelOptions;
     files: string[];
     expectedOuts: string[];
-    gatherDiagnostics?: (program: Program) => Diagnostics;
+    gatherDiagnostics?: (program: Program) => readonly ts.Diagnostic[];
     bazelHost?: CompilerHost;
     ng: CompilerCliModule;
 }): {
-    diagnostics: Diagnostics;
+    diagnostics: readonly ts.Diagnostic[];
     program: Program;
 };
 /**
