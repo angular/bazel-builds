@@ -1,6 +1,6 @@
 {
   "name": "@angular/bazel",
-  "version": "14.0.0-next.0+1069.sha-f0cfa00.with-local-changes",
+  "version": "14.0.0-next.0+1070.sha-db05ae1.with-local-changes",
   "description": "Angular - bazel build rules",
   "author": "angular",
   "license": "MIT",
@@ -28,7 +28,7 @@
     "tslib": "^2.3.0"
   },
   "peerDependencies": {
-    "@angular/compiler-cli": "14.0.0-next.0+1069.sha-f0cfa00.with-local-changes",
+    "@angular/compiler-cli": "14.0.0-next.0+1070.sha-db05ae1.with-local-changes",
     "@bazel/typescript": ">=1.0.0",
     "@rollup/plugin-commonjs": "^21.0.0",
     "@rollup/plugin-node-resolve": "^13.0.4",
