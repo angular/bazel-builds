@@ -1,6 +1,6 @@
 {
   "name": "@angular/bazel",
-  "version": "14.0.0-next.14+9.sha-3dee3d1",
+  "version": "14.0.0-next.14+16.sha-612d6e0",
   "description": "Angular - bazel build rules",
   "author": "angular",
   "license": "MIT",
@@ -8,9 +8,9 @@
     "node": "^14.15.0 || >=16.10.0"
   },
   "bin": {
-    "api-extractor": "./src/api-extractor/index.js",
     "ngc-wrapped": "./src/ngc-wrapped/index.js",
     "packager": "./src/ng_package/packager.js",
+    "types_bundler": "./src/types_bundle/index.js",
     "xi18n": "./src/ngc-wrapped/extract_i18n.js"
   },
   "typings": "./src/ngc-wrapped/index.d.ts",
@@ -28,7 +28,7 @@
     "tslib": "^2.3.0"
   },
   "peerDependencies": {
-    "@angular/compiler-cli": "14.0.0-next.14+9.sha-3dee3d1",
+    "@angular/compiler-cli": "14.0.0-next.14+16.sha-612d6e0",
     "@bazel/concatjs": "^5.3.0",
     "@rollup/plugin-commonjs": "^21.0.0",
     "@rollup/plugin-node-resolve": "^13.0.4",
