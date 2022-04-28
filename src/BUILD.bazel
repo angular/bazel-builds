@@ -1,0 +1,9 @@
+load("//@angular/bazel/src/ng_module:partial_compilation.bzl", "ng_partial_compilation_flag")
+
+
+
+ng_partial_compilation_flag(
+    name = "partial_compilation",
+    build_setting_default = False,
+    visibility = ["//visibility:public"],
+)
