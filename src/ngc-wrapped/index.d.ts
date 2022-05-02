@@ -6,10 +6,13 @@
  * found in the LICENSE file at https://angular.io/license
  */
 /// <amd-module name="@angular/bazel" />
-import { BazelOptions, CompilerHost } from '@bazel/concatjs/internal/tsc_wrapped';
+import { BazelOptions as ExternalBazelOptions, CompilerHost } from '@bazel/concatjs/internal/tsc_wrapped';
 import type { CompilerHost as NgCompilerHost, Program, CompilerOptions } from '@angular/compiler-cli';
 import ts from 'typescript';
 declare type CompilerCliModule = typeof import('@angular/compiler-cli') & typeof import('@angular/compiler-cli/private/bazel');
+interface BazelOptions extends ExternalBazelOptions {
+    devmode?: boolean;
+}
 export declare function main(args: any): Promise<1 | 0>;
 export declare function runOneBuild(args: string[], inputs?: {
     [path: string]: string;
