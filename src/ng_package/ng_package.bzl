@@ -221,7 +221,7 @@ def _run_rollup(ctx, bundle_name, rollup_config, entry_point, inputs, js_output,
     if stamp and ctx.version_file:
         other_inputs.append(ctx.version_file)
     ctx.actions.run(
-        progress_message = "ng_package: Rollup %s %s" % (bundle_name, ctx.label),
+        progress_message = "ng_package: Rollup %s (%s)" % (bundle_name, entry_point.short_path),
         mnemonic = "AngularPackageRollup",
         inputs = inputs.to_list() + other_inputs,
         outputs = [js_output, map_output],
@@ -560,7 +560,7 @@ _NG_PACKAGE_ATTRS = dict(PKG_NPM_ATTRS, **{
         doc = """A .txt file passed to the `banner` config option of rollup.
         The contents of the file will be copied to the top of the resulting bundles.
         Note that you can replace a version placeholder in the license file, by using
-        the special version `14.0.0-next.16+sha-58a8bd3`. See the section on stamping in the README.""",
+        the special version `14.0.0-next.16+sha-86f0213`. See the section on stamping in the README.""",
         allow_single_file = [".txt"],
     ),
     "deps": attr.label_list(
