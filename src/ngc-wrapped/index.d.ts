@@ -11,7 +11,9 @@ import type { CompilerHost as NgCompilerHost, Program, CompilerOptions } from '@
 import ts from 'typescript';
 declare type CompilerCliModule = typeof import('@angular/compiler-cli') & typeof import('@angular/compiler-cli/private/bazel');
 interface BazelOptions extends ExternalBazelOptions {
+    allowedInputs?: string[];
     devmode?: boolean;
+    unusedInputsListPath?: string;
 }
 export declare function main(args: any): Promise<1 | 0>;
 export declare function runOneBuild(args: string[], inputs?: {
@@ -36,6 +38,14 @@ export declare function compile({ allDepsCompiledWithBazel, useManifestPathsAsMo
     diagnostics: readonly ts.Diagnostic[];
     program: Program;
 };
+/**
+ * Writes a collection of unused input files and directories which can be
+ * consumed by bazel to avoid triggering rebuilds if only unused inputs are
+ * changed.
+ *
+ * See https://bazel.build/contribute/codebase#input-discovery
+ */
+export declare function maybeWriteUnusedInputsList(program: ts.Program, options: ts.CompilerOptions, bazelOpts: BazelOptions): void;
 /**
  * Adds support for the optional `fileNameToModuleName` operation to a given `ng.CompilerHost`.
  *
