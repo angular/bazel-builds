@@ -12,7 +12,6 @@ import ts from 'typescript';
 declare type CompilerCliModule = typeof import('@angular/compiler-cli') & typeof import('@angular/compiler-cli/private/bazel');
 interface BazelOptions extends ExternalBazelOptions {
     allowedInputs?: string[];
-    devmode?: boolean;
     unusedInputsListPath?: string;
 }
 export declare function main(args: any): Promise<1 | 0>;
