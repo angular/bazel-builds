@@ -119,7 +119,7 @@ function resolveBazel(importee, importer) {
   if (resolved) {
     if (path.extname(resolved) == '.js') {
       // check for .mjs file and prioritize that
-      const resolved_mjs = resolved.slice(0, -3) + '.mjs';
+      const resolved_mjs = resolved.substr(0, resolved.length - 3) + '.mjs';
       if (fileExists(resolved_mjs)) {
         resolved = resolved_mjs;
       }
@@ -142,7 +142,7 @@ if (bannerFile) {
     // Don't assume BUILD_SCM_VERSION exists
     if (versionTag) {
       const version = versionTag.split(' ')[1].trim();
-      banner = banner.replace(/14.1.0-next.0+sha-8629f2d/, version);
+      banner = banner.replace(/13.3.9+18.sha-3e3f8fc/, version);
     }
   }
 }
