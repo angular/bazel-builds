@@ -142,7 +142,7 @@ if (bannerFile) {
     // Don't assume BUILD_SCM_VERSION exists
     if (versionTag) {
       const version = versionTag.split(' ')[1].trim();
-      banner = banner.replace(/14.0.0+sha-31d6f32/, version);
+      banner = banner.replace(/14.0.1+sha-f0b94f5/, version);
     }
   }
 }
