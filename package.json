@@ -1,6 +1,6 @@
 {
   "name": "@angular/bazel",
-  "version": "14.1.0+sha-79825d3",
+  "version": "14.1.0+sha-8085fe3",
   "description": "Angular - bazel build rules",
   "author": "angular",
   "license": "MIT",
@@ -28,7 +28,7 @@
     "tslib": "^2.3.0"
   },
   "peerDependencies": {
-    "@angular/compiler-cli": "14.1.0+sha-79825d3",
+    "@angular/compiler-cli": "14.1.0+sha-8085fe3",
     "@bazel/concatjs": "^5.3.0",
     "@bazel/worker": "^5.3.0",
     "@rollup/plugin-commonjs": "^22.0.0",
