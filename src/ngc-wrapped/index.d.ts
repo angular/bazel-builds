@@ -14,7 +14,7 @@ interface BazelOptions extends ExternalBazelOptions {
     allowedInputs?: string[];
     unusedInputsListPath?: string;
 }
-export declare function main(args: any): Promise<1 | 0>;
+export declare function main(args: string[]): Promise<1 | 0>;
 export declare function runOneBuild(args: string[], inputs?: {
     [path: string]: string;
 }): Promise<boolean>;
@@ -35,7 +35,7 @@ export declare function compile({ allDepsCompiledWithBazel, useManifestPathsAsMo
     ng: CompilerCliModule;
 }): {
     diagnostics: readonly ts.Diagnostic[];
-    program: Program;
+    program: Program | undefined;
 };
 /**
  * Writes a collection of unused input files and directories which can be
@@ -44,7 +44,7 @@ export declare function compile({ allDepsCompiledWithBazel, useManifestPathsAsMo
  *
  * See https://bazel.build/contribute/codebase#input-discovery
  */
-export declare function maybeWriteUnusedInputsList(program: ts.Program, options: ts.CompilerOptions, bazelOpts: BazelOptions): void;
+export declare function maybeWriteUnusedInputsList(program: ts.Program, rootDir: string, bazelOpts: BazelOptions): void;
 /**
  * Adds support for the optional `fileNameToModuleName` operation to a given `ng.CompilerHost`.
  *
@@ -53,5 +53,5 @@ export declare function maybeWriteUnusedInputsList(program: ts.Program, options:
  * in g3 configures its own `ng.CompilerHost` which also requires `fileNameToModuleName` to work
  * correctly.
  */
-export declare function patchNgHostWithFileNameToModuleName(ngHost: NgCompilerHost, compilerOpts: CompilerOptions, bazelOpts: BazelOptions, useManifestPathsAsModuleName: boolean): void;
+export declare function patchNgHostWithFileNameToModuleName(ngHost: NgCompilerHost, compilerOpts: CompilerOptions, bazelOpts: BazelOptions, rootDirs: string[], useManifestPathsAsModuleName: boolean): void;
 export {};
