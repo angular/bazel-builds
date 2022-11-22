@@ -14,7 +14,7 @@ specification of this format at https://goo.gl/jB3GVv
 """
 
 load("@rules_nodejs//nodejs:providers.bzl", "StampSettingInfo")
-load("@build_bazel_rules_nodejs//:providers.bzl", "DeclarationInfo", "JSEcmaScriptModuleInfo", "NpmPackageInfo", "node_modules_aspect")
+load("@build_bazel_rules_nodejs//:providers.bzl", "DeclarationInfo", "JSEcmaScriptModuleInfo", "LinkablePackageInfo", "NpmPackageInfo", "node_modules_aspect")
 load("@build_bazel_rules_nodejs//internal/linker:link_node_modules.bzl", "LinkerPackageMappingInfo")
 load(
     "@build_bazel_rules_nodejs//internal/pkg_npm:pkg_npm.bzl",
@@ -542,6 +542,7 @@ def _ng_package_impl(ctx):
         # More details: https://github.com/bazelbuild/rules_nodejs/issues/2941.
         # TODO(devversion): Consider supporting the `package_name` attribute.
         LinkerPackageMappingInfo(mappings = empty_depset, node_modules_roots = empty_depset),
+        LinkablePackageInfo(path = package_dir.path, files = depset([package_dir])),
     ]
 
 _NG_PACKAGE_DEPS_ASPECTS = [ng_package_module_mappings_aspect, node_modules_aspect]
@@ -561,7 +562,7 @@ _NG_PACKAGE_ATTRS = dict(PKG_NPM_ATTRS, **{
         doc = """A .txt file passed to the `banner` config option of rollup.
         The contents of the file will be copied to the top of the resulting bundles.
         Note that you can replace a version placeholder in the license file, by using
-        the special version `15.1.0-next.0+sha-2e2135b`. See the section on stamping in the README.""",
+        the special version `15.1.0-next.0+sha-903917b`. See the section on stamping in the README.""",
         allow_single_file = [".txt"],
     ),
     "deps": attr.label_list(
