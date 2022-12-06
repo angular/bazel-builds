@@ -9,7 +9,7 @@
 import { BazelOptions as ExternalBazelOptions, CompilerHost } from '@bazel/concatjs/internal/tsc_wrapped';
 import type { CompilerHost as NgCompilerHost, Program, CompilerOptions } from '@angular/compiler-cli';
 import ts from 'typescript';
-declare type CompilerCliModule = typeof import('@angular/compiler-cli') & typeof import('@angular/compiler-cli/private/bazel');
+type CompilerCliModule = typeof import('@angular/compiler-cli') & typeof import('@angular/compiler-cli/private/bazel');
 interface BazelOptions extends ExternalBazelOptions {
     allowedInputs?: string[];
     unusedInputsListPath?: string;
