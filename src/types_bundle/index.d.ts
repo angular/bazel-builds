@@ -5,7 +5,6 @@
  * Use of this source code is governed by an MIT-style license that can be
  * found in the LICENSE file at https://angular.io/license
  */
-/// <amd-module name="angular/packages/bazel/src/types_bundle/index" />
 /// <reference lib="es2020" />
 /**
  * Bundles the specified entry-point and writes the output `d.ts` bundle to the specified

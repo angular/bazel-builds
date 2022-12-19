@@ -32,7 +32,7 @@ def _debug(vars, *args):
 
 _DEFAULT_NG_PACKAGER = "//@angular/bazel/bin:packager"
 _DEFAULT_ROLLUP_CONFIG_TMPL = "//:node_modules/@angular/bazel/src/ng_package/rollup.config.js"
-_DEFAULT_ROLLUP = "//@angular/bazel/src/ng_package:rollup_for_ng_package"
+_DEFAULT_ROLLUP = "//@angular/bazel/src/ng_package/rollup"
 
 _NG_PACKAGE_MODULE_MAPPINGS_ATTR = "ng_package_module_mappings"
 
@@ -112,7 +112,7 @@ def _compute_node_modules_root(ctx):
     """Computes the node_modules root from the node_modules and deps attributes.
 
     Args:
-      ctx: the skylark execution context
+      ctx: the starlark execution context
 
     Returns:
       The node_modules root as a string
@@ -562,7 +562,7 @@ _NG_PACKAGE_ATTRS = dict(PKG_NPM_ATTRS, **{
         doc = """A .txt file passed to the `banner` config option of rollup.
         The contents of the file will be copied to the top of the resulting bundles.
         Note that you can replace a version placeholder in the license file, by using
-        the special version `15.0.4+sha-470738c`. See the section on stamping in the README.""",
+        the special version `15.0.4+sha-a3958a2`. See the section on stamping in the README.""",
         allow_single_file = [".txt"],
     ),
     "deps": attr.label_list(
