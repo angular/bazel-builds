@@ -7,4 +7,3 @@
  *
  * @fileoverview Extracts i18n messages.
  */
-/// <amd-module name="@angular/bazel/extract_i18n" />

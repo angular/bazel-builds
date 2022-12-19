@@ -5,12 +5,10 @@
  * Use of this source code is governed by an MIT-style license that can be
  * found in the LICENSE file at https://angular.io/license
  */
-/// <amd-module name="@angular/bazel" />
-import { BazelOptions as ExternalBazelOptions, CompilerHost } from '@bazel/concatjs/internal/tsc_wrapped';
-import type { CompilerHost as NgCompilerHost, Program, CompilerOptions } from '@angular/compiler-cli';
+import * as ng from '@angular/compiler-cli';
+import tscw from '@bazel/concatjs/internal/tsc_wrapped/index.js';
 import ts from 'typescript';
-type CompilerCliModule = typeof import('@angular/compiler-cli') & typeof import('@angular/compiler-cli/private/bazel');
-interface BazelOptions extends ExternalBazelOptions {
+interface BazelOptions extends tscw.BazelOptions {
     allowedInputs?: string[];
     unusedInputsListPath?: string;
 }
@@ -19,10 +17,10 @@ export declare function runOneBuild(args: string[], inputs?: {
     [path: string]: string;
 }): Promise<boolean>;
 export declare function relativeToRootDirs(filePath: string, rootDirs: string[]): string;
-export declare function compile({ allDepsCompiledWithBazel, useManifestPathsAsModuleName, compilerOpts, tsHost, bazelOpts, files, inputs, expectedOuts, gatherDiagnostics, bazelHost, ng, }: {
+export declare function compile({ allDepsCompiledWithBazel, useManifestPathsAsModuleName, compilerOpts, tsHost, bazelOpts, files, inputs, expectedOuts, gatherDiagnostics, bazelHost, }: {
     allDepsCompiledWithBazel?: boolean;
     useManifestPathsAsModuleName?: boolean;
-    compilerOpts: CompilerOptions;
+    compilerOpts: ng.CompilerOptions;
     tsHost: ts.CompilerHost;
     inputs?: {
         [path: string]: string;
@@ -30,12 +28,11 @@ export declare function compile({ allDepsCompiledWithBazel, useManifestPathsAsMo
     bazelOpts: BazelOptions;
     files: string[];
     expectedOuts: string[];
-    gatherDiagnostics?: (program: Program) => readonly ts.Diagnostic[];
-    bazelHost?: CompilerHost;
-    ng: CompilerCliModule;
+    gatherDiagnostics?: (program: ng.Program) => readonly ts.Diagnostic[];
+    bazelHost?: tscw.CompilerHost;
 }): {
     diagnostics: readonly ts.Diagnostic[];
-    program: Program | undefined;
+    program: ng.Program | undefined;
 };
 /**
  * Writes a collection of unused input files and directories which can be
@@ -53,5 +50,5 @@ export declare function maybeWriteUnusedInputsList(program: ts.Program, rootDir:
  * in g3 configures its own `ng.CompilerHost` which also requires `fileNameToModuleName` to work
  * correctly.
  */
-export declare function patchNgHostWithFileNameToModuleName(ngHost: NgCompilerHost, compilerOpts: CompilerOptions, bazelOpts: BazelOptions, rootDirs: string[], useManifestPathsAsModuleName: boolean): void;
+export declare function patchNgHostWithFileNameToModuleName(ngHost: ng.CompilerHost, compilerOpts: ng.CompilerOptions, bazelOpts: BazelOptions, rootDirs: string[], useManifestPathsAsModuleName: boolean): void;
 export {};
