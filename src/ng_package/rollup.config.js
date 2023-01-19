@@ -143,7 +143,7 @@ if (bannerFile) {
     // Don't assume STABLE_PROJECT_VERSION exists
     if (versionTag) {
       const version = versionTag.split(' ')[1].trim();
-      banner = banner.replace(/15.2.0-next.1+sha-08b72b7/, version);
+      banner = banner.replace(/15.2.0-next.1+sha-bca76ed/, version);
     }
   }
 }
