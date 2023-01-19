@@ -16,7 +16,6 @@ export declare function main(args: string[]): Promise<1 | 0>;
 export declare function runOneBuild(args: string[], inputs?: {
     [path: string]: string;
 }): Promise<boolean>;
-export declare function relativeToRootDirs(filePath: string, rootDirs: string[]): string;
 export declare function compile({ allDepsCompiledWithBazel, useManifestPathsAsModuleName, compilerOpts, tsHost, bazelOpts, files, inputs, expectedOuts, gatherDiagnostics, bazelHost, }: {
     allDepsCompiledWithBazel?: boolean;
     useManifestPathsAsModuleName?: boolean;
@@ -43,12 +42,8 @@ export declare function compile({ allDepsCompiledWithBazel, useManifestPathsAsMo
  */
 export declare function maybeWriteUnusedInputsList(program: ts.Program, rootDir: string, bazelOpts: BazelOptions): void;
 /**
- * Adds support for the optional `fileNameToModuleName` operation to a given `ng.CompilerHost`.
- *
- * This is used within `ngc-wrapped` and the Bazel compilation flow, but is exported here to allow
- * for other consumers of the compiler to access this same logic. For example, the xi18n operation
- * in g3 configures its own `ng.CompilerHost` which also requires `fileNameToModuleName` to work
- * correctly.
+ * @deprecated
+ * Kept here just for compatibility with 1P tools. To be removed soon after 1P update.
  */
 export declare function patchNgHostWithFileNameToModuleName(ngHost: ng.CompilerHost, compilerOpts: ng.CompilerOptions, bazelOpts: BazelOptions, rootDirs: string[], useManifestPathsAsModuleName: boolean): void;
 export {};
