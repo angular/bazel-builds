@@ -1,11 +1,11 @@
 {
   "name": "@angular/bazel",
-  "version": "16.1.0-next.0+sha-83262dc",
+  "version": "16.1.0-next.0+sha-b98ecbc",
   "description": "Angular - bazel build rules",
   "author": "angular",
   "license": "MIT",
   "engines": {
-    "node": "^16.13.0 || >=18.10.0"
+    "node": "^16.14.0 || >=18.10.0"
   },
   "bin": {
     "ngc-wrapped": "./src/ngc-wrapped/index.mjs",
@@ -28,7 +28,7 @@
     "tslib": "^2.3.0"
   },
   "peerDependencies": {
-    "@angular/compiler-cli": "16.1.0-next.0+sha-83262dc",
+    "@angular/compiler-cli": "16.1.0-next.0+sha-b98ecbc",
     "@bazel/concatjs": "^5.3.0",
     "@bazel/worker": "^5.3.0",
     "@rollup/plugin-commonjs": "^24.0.0",
