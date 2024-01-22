@@ -10,7 +10,7 @@
  * Bundles the specified entry-point and writes the output `d.ts` bundle to the specified
  * output path. An optional license banner can be provided to be added to the bundle output.
  */
-export declare function runMain({ entryPointExecpath, outputExecpath, packageJsonExecpath, licenseBannerExecpath }: {
+export declare function runMain({ entryPointExecpath, outputExecpath, packageJsonExecpath, licenseBannerExecpath, }: {
     entryPointExecpath: string;
     outputExecpath: string;
     packageJsonExecpath: string;
