@@ -5,7 +5,6 @@
  * Use of this source code is governed by an MIT-style license that can be
  * found in the LICENSE file at https://angular.io/license
  */
-/// <reference lib="es2020" />
 /**
  * Bundles the specified entry-point and writes the output `d.ts` bundle to the specified
  * output path. An optional license banner can be provided to be added to the bundle output.
