@@ -1,11 +1,10 @@
 # Copyright Google LLC All Rights Reserved.
 #
 # Use of this source code is governed by an MIT-style license that can be
-# found in the LICENSE file at https://angular.io/license
+# found in the LICENSE file at https://angular.dev/license
 """Run Angular's AOT template compiler
 """
 
-load("//@angular/bazel/src/ng_module:partial_compilation.bzl", "NgPartialCompilationInfo")
 load(
     "//@angular/bazel/src:external.bzl",
     "COMMON_ATTRIBUTES",
@@ -23,6 +22,7 @@ load(
     "ts_providers_dict_to_struct",
     "tsc_wrapped_tsconfig",
 )
+load("//@angular/bazel/src/ng_module:partial_compilation.bzl", "NgPartialCompilationInfo")
 
 # enable_perf_logging controls whether Ivy's performance tracing system will be enabled for any
 # compilation which includes this provider.
@@ -180,6 +180,7 @@ def _ngc_tsconfig(ctx, files, srcs, **kwargs):
         # for aliased exports. We disable relative paths and always use manifest paths in google3.
         "_useHostForImportGeneration": (not _is_bazel()),
         "_useManifestPathsAsModuleName": (not _is_bazel()),
+        "_isAngularCoreCompilation": ctx.attr.is_angular_core_compilation,
     }
 
     if is_perf_requested(ctx):
@@ -208,10 +209,6 @@ def _ngc_tsconfig(ctx, files, srcs, **kwargs):
     # https://github.com/bazelbuild/rules_nodejs/blob/901df3868e3ceda177d3ed181205e8456a5592ea/third_party/github.com/bazelbuild/rules_typescript/internal/common/tsconfig.bzl#L195
     # TODO(devversion): In the future, combine prodmode and devmode so we can get rid of the
     # ambiguous terminology and concept that can result in slow-down for development workflows.
-    # TODO(alanagius): The below causes a drastic size increase when enabled (4Kb in the //integration/forms:test). This is mainly due to Babel transforms for Safari 15.
-    # https://github.com/angular/angular-cli/blob/3e8bdf72d6b7e2925d2822da807b726f88a77e1a/packages/angular_devkit/build_angular/src/babel/presets/application.ts#L199-L204
-    # https://www.diffchecker.com/9Ge3pexk
-    tsconfig["compilerOptions"]["useDefineForClassFields"] = False
     tsconfig["compilerOptions"]["target"] = "es2022"
     tsconfig["compilerOptions"]["module"] = "esnext"
 
@@ -477,6 +474,10 @@ NG_MODULE_ATTRIBUTES = {
         default = Label(DEFAULT_NG_XI18N),
         executable = True,
         cfg = "exec",
+    ),
+    "is_angular_core_compilation": attr.bool(
+        default = False,
+        doc = "Whether this is a compilation of Angular core.",
     ),
     "_partial_compilation_flag": attr.label(
         default = "@npm//@angular/bazel/src:partial_compilation",
