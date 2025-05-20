@@ -16,10 +16,16 @@ ng_partial_compilation_flag = rule(
 )
 
 def _partial_compilation_transition_impl(_settings, _attr):
-    return {"@npm//@angular/bazel/src:partial_compilation": True}
+    return {
+        "@rules_angular//src/ng_project/config:partial_compilation": True,
+        "@npm//@angular/bazel/src:partial_compilation": True,
+    }
 
 partial_compilation_transition = transition(
     implementation = _partial_compilation_transition_impl,
     inputs = [],
-    outputs = ["@npm//@angular/bazel/src:partial_compilation"],
+    outputs = [
+        "@npm//@angular/bazel/src:partial_compilation",
+        "@rules_angular//src/ng_project/config:partial_compilation",
+    ],
 )
